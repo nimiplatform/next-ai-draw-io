@@ -1,0 +1,8 @@
+app_id: io.github.nimiplatform.next-ai-draw-io
+display_name: Next AI Draw.io
+version: 0.4.16
+npm_package_name: next-ai-draw-io
+cargo_package_name: next-ai-draw-io-shell
+tauri_identifier: ai.nimi.apps.io.github.nimiplatform.next-ai-draw-io
+package_author: DayuanJiang and Next AI Draw.io contributors; Nimi adaptation contributors
+identity_role: scaffold-generated-authoring-input

@@ -3,7 +3,7 @@
  * Translations for menu labels that don't use Electron's built-in roles
  */
 
-import { getUserLocale } from "./config-manager"
+import { getUserLocale } from "./preferences"
 
 export type MenuLocale = "en" | "zh" | "ja" | "zh-Hant"
 

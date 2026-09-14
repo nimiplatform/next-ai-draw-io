@@ -133,7 +133,7 @@
         "customSystemMessageDescription": "添加自定义指令，将附加到 AI 的系统提示末尾。",
         "customSystemMessagePlaceholder": "例如：图表始终使用蓝色配色方案...",
         "maxOutputTokens": "最大输出 token 数",
-        "maxOutputTokensDescription": "单次回复的额度，思考过程和图表 XML 共用。如果 AI 一直在思考却没有生成图表，请把它调大。留空则使用默认值。",
+        "maxOutputTokensDescription": "留空使用 Nimi 配置。显式填写的 token 预算会原样发送；如果当前配置不支持，Nimi 会返回错误，便于你调整。",
         "panelVisibility": "大厅面板",
         "panelVisibilityDescription": "选择在聊天大厅显示哪些面板。",
         "showRecentChats": "最近聊天",
@@ -553,5 +553,13 @@
                 "description": "每日重置边界所用的时区。"
             }
         }
+    },
+    "nimi": {
+        "models": "Nimi AI 模型",
+        "modelsDescription": "选择 Nimi 用来生成、编辑和分析图表的模型。",
+        "connectTitle": "Next AI Draw.io",
+        "connectDescription": "请从 Nimi Desktop 打开此应用，并授予 AI 和存储访问权限。",
+        "storageNotice": "图表保存在 Nimi 管理的存储中。访问恢复后，当前窗口会自动重新连接。",
+        "connectionDetails": "连接详情"
     }
 }

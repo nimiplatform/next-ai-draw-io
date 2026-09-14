@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs"
 import path from "node:path"
 import { app, type UtilityProcess, utilityProcess } from "electron"
+import { nextServerEnvironment } from "./nimi-launch"
 import {
     findAvailablePort,
     getAllocatedPort,
@@ -17,7 +18,7 @@ let serverProcess: UtilityProcess | null = null
  */
 function getResourcePath(): string {
     if (app.isPackaged) {
-        return path.join(process.resourcesPath, "standalone")
+        return path.join(process.resourcesPath, "electron-standalone")
     }
     return path.join(app.getAppPath(), ".next", "standalone")
 }
@@ -45,7 +46,7 @@ async function waitForServer(url: string, timeout = 30000): Promise<void> {
  * Start the Next.js standalone server using Electron's utilityProcess
  * This API is designed for running Node.js code in the background
  */
-export async function startNextServer(): Promise<string> {
+export async function startNextServer(allocatedPort?: number): Promise<string> {
     const resourcePath = getResourcePath()
     const serverPath = path.join(resourcePath, "server.js")
 
@@ -61,38 +62,10 @@ export async function startNextServer(): Promise<string> {
     }
 
     // Find an available port (random in production, fixed in development)
-    const port = await findAvailablePort()
+    const port = allocatedPort ?? (await findAvailablePort())
     console.log(`Using port: ${port}`)
 
-    // Set up environment variables
-    const env: Record<string, string> = {
-        NODE_ENV: "production",
-        PORT: String(port),
-        HOSTNAME: "127.0.0.1",
-        // Enable Node.js built-in proxy support for fetch (Node.js 24+)
-        NODE_USE_ENV_PROXY: "1",
-    }
-
-    // Set cache directory to a writable location (user's app data folder)
-    // This is necessary because the packaged app might be on a read-only volume
-    if (app.isPackaged) {
-        const cacheDir = path.join(app.getPath("userData"), "cache")
-        env.NEXT_CACHE_DIR = cacheDir
-    }
-
-    // Copy existing environment variables
-    for (const [key, value] of Object.entries(process.env)) {
-        if (value !== undefined && !env[key]) {
-            env[key] = value
-        }
-    }
-
-    // Debug: log proxy-related env vars
-    console.log("Proxy env vars being passed to server:", {
-        HTTP_PROXY: env.HTTP_PROXY || env.http_proxy || "not set",
-        HTTPS_PROXY: env.HTTPS_PROXY || env.https_proxy || "not set",
-        NODE_USE_ENV_PROXY: env.NODE_USE_ENV_PROXY || "not set",
-    })
+    const env = nextServerEnvironment(port, process.env)
 
     // Use Electron's utilityProcess API for running Node.js in background
     // This is the recommended way to run Node.js code in Electron

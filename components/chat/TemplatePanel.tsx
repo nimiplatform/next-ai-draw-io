@@ -23,6 +23,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useDictionary } from "@/hooks/use-dictionary"
+import { saveExport } from "@/lib/nimi/files"
 import {
     deleteTemplate,
     duplicateTemplate,
@@ -204,7 +205,7 @@ export function TemplatePanel({
     }
 
     // Export templates to JSON file
-    const handleExport = () => {
+    const handleExport = async () => {
         if (templates.length === 0) {
             setImportMessage({
                 type: "error",
@@ -216,15 +217,11 @@ export function TemplatePanel({
         try {
             const exportData = exportTemplates(templates)
             const json = JSON.stringify(exportData, null, 2)
-            const blob = new Blob([json], { type: "application/json" })
-            const url = URL.createObjectURL(blob)
-            const a = document.createElement("a")
-            a.href = url
-            a.download = `templates-${new Date().toISOString().split("T")[0]}.json`
-            document.body.appendChild(a)
-            a.click()
-            document.body.removeChild(a)
-            URL.revokeObjectURL(url)
+            const saved = await saveExport(
+                `templates-${new Date().toISOString().split("T")[0]}.json`,
+                json,
+            )
+            if (!saved) return
 
             setImportMessage({
                 type: "success",

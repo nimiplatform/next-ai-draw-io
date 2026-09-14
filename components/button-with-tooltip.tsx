@@ -25,7 +25,9 @@ export function ButtonWithTooltip({
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <Button {...buttonProps}>{children}</Button>
+                    <Button aria-label={tooltipContent} {...buttonProps}>
+                        {children}
+                    </Button>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs text-wrap">
                     {tooltipContent}

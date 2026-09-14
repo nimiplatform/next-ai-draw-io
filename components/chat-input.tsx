@@ -23,7 +23,6 @@ import { ButtonWithTooltip } from "@/components/button-with-tooltip"
 import { TemplateCreateDialog } from "@/components/chat/TemplateCreateDialog"
 import { ErrorToast } from "@/components/error-toast"
 import { HistoryDialog } from "@/components/history-dialog"
-import { ModelSelector } from "@/components/model-selector"
 import { SaveDialog } from "@/components/save-dialog"
 
 import { Button } from "@/components/ui/button"
@@ -34,7 +33,6 @@ import { useDictionary } from "@/hooks/use-dictionary"
 import { formatMessage } from "@/lib/i18n/utils"
 import { isPdfFile, isTextFile } from "@/lib/pdf-utils"
 import { STORAGE_KEYS } from "@/lib/storage"
-import type { FlattenedModel } from "@/lib/types/model-config"
 import { extractUrlContent, type UrlData } from "@/lib/url-utils"
 import { isRealDiagram } from "@/lib/utils"
 import { FilePreviewList } from "./file-preview-list"
@@ -152,6 +150,7 @@ export interface ChatInputRef {
 }
 
 interface ChatInputProps {
+    initializing?: boolean
     input: string
     status: "submitted" | "streaming" | "ready" | "error"
     onSubmit: (e: React.FormEvent<HTMLFormElement>) => void
@@ -169,11 +168,7 @@ interface ChatInputProps {
     sessionId?: string
     error?: Error | null
     // Model selector props
-    models?: FlattenedModel[]
-    selectedModelId?: string
-    onModelSelect?: (modelId: string | undefined) => void
     onConfigureModels?: () => void
-    showUnvalidatedModels?: boolean
     // Focus control props
     shouldFocus?: boolean
     onFocused?: () => void
@@ -183,6 +178,7 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
     function ChatInput(
         {
             input,
+            initializing = false,
             status,
             onSubmit,
             onChange,
@@ -194,11 +190,7 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
             onUrlChange,
             sessionId,
             error = null,
-            models = [],
-            selectedModelId,
-            onModelSelect = () => {},
             onConfigureModels,
-            showUnvalidatedModels = false,
             shouldFocus = false,
             onFocused,
         },
@@ -243,7 +235,16 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
         const [sendShortcut, setSendShortcut] = useState("ctrl-enter")
         // Allow retry when there's an error (even if status is still "streaming" or "submitted")
         const isDisabled =
-            (status === "streaming" || status === "submitted") && !error
+            initializing ||
+            ((status === "streaming" || status === "submitted") && !error)
+
+        const attachmentsReady =
+            !isExtractingUrl &&
+            files.every(
+                (file) =>
+                    !(isPdfFile(file) || isTextFile(file)) ||
+                    !!pdfData.get(file)?.text.trim(),
+            )
 
         const adjustTextareaHeight = useCallback(() => {
             const textarea = textareaRef.current
@@ -292,7 +293,7 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
             if (shouldSend) {
                 e.preventDefault()
                 const form = e.currentTarget.closest("form")
-                if (form && input.trim() && !isDisabled) {
+                if (form && input.trim() && !isDisabled && attachmentsReady) {
                     form.requestSubmit()
                 }
             }
@@ -564,14 +565,16 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
                                 disabled={isDisabled}
                             />
                         </div>
-                        <ModelSelector
-                            models={models}
-                            selectedModelId={selectedModelId}
-                            onSelect={onModelSelect}
-                            onConfigure={onConfigureModels}
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={onConfigureModels}
                             disabled={isDisabled}
-                            showUnvalidatedModels={showUnvalidatedModels}
-                        />
+                            aria-label={dict.nimi.models}
+                        >
+                            Nimi AI
+                        </Button>
                         <div className="w-px h-5 bg-border mx-1" />
                         {(status === "streaming" || status === "submitted") &&
                         onStop ? (
@@ -588,7 +591,11 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
                         ) : (
                             <Button
                                 type="submit"
-                                disabled={isDisabled || !input.trim()}
+                                disabled={
+                                    isDisabled ||
+                                    !input.trim() ||
+                                    !attachmentsReady
+                                }
                                 size="sm"
                                 className="h-8 px-4 rounded-xl font-medium shadow-sm"
                                 aria-label={dict.chat.send}

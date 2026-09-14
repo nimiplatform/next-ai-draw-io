@@ -1,4 +1,9 @@
+@import "@nimiplatform/kit/ui/styles.css";
+@import "@nimiplatform/kit/ui/themes/light.css";
+@import "@nimiplatform/kit/ui/themes/dark.css";
+@import "@nimiplatform/kit/ui/themes/nimi-accent.css";
 @import "tailwindcss";
+@source "../node_modules/@nimiplatform/kit/dist/**/*.{js,mjs}";
 
 @plugin "tailwindcss-animate";
 @plugin "@tailwindcss/typography";

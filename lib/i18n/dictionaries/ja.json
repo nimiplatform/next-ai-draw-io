@@ -133,7 +133,7 @@
         "customSystemMessageDescription": "AIのシステムプロンプトに追加されるカスタム指示を入力します。",
         "customSystemMessagePlaceholder": "例：ダイアグラムには常に青色のカラースキームを使用...",
         "maxOutputTokens": "最大出力トークン数",
-        "maxOutputTokensDescription": "1回の応答の予算で、思考過程とダイアグラムの XML が共有します。AI が考え続けてダイアグラムが生成されない場合は大きくしてください。空欄ならデフォルト値を使います。",
+        "maxOutputTokensDescription": "空欄の場合は Nimi の設定を使用します。明示したトークン上限はそのまま送信され、選択した設定が対応していない場合は Nimi がエラーを返します。",
         "panelVisibility": "ロビーパネル",
         "panelVisibilityDescription": "チャットロビーに表示するパネルを選択します。",
         "showRecentChats": "最近のチャット",
@@ -553,5 +553,13 @@
                 "description": "1 日のリセット境界に使用するタイムゾーン。"
             }
         }
+    },
+    "nimi": {
+        "models": "Nimi AI モデル",
+        "modelsDescription": "図の生成、編集、分析に使用する Nimi モデルを選択します。",
+        "connectTitle": "Next AI Draw.io",
+        "connectDescription": "Nimi Desktop からアプリを開き、AI とストレージへのアクセスを許可してください。",
+        "storageNotice": "図は Nimi が管理するストレージに保存されます。アクセスが回復すると自動的に再接続します。",
+        "connectionDetails": "接続の詳細"
     }
 }

@@ -1,10 +1,11 @@
-import { type DBSchema, type IDBPDatabase, openDB } from "idb"
 import { nanoid } from "nanoid"
-
-// Constants
-const DB_NAME = "next-ai-drawio-templates"
-const DB_VERSION = 1
-const STORE_NAME = "templates"
+import { currentNimiSessionSignal } from "./nimi/client"
+import {
+    listDocuments,
+    readDocument,
+    removeDocument,
+    writeDocument,
+} from "./nimi/documents"
 
 // Types
 export interface Template {
@@ -33,19 +34,6 @@ export type TemplateCreateInput = Pick<Template, "prompt"> &
         >
     >
 
-interface TemplateDB extends DBSchema {
-    templates: {
-        key: string
-        value: Template
-        indexes: {
-            "by-updated": number
-            "by-pinned": number
-            "by-run-count": number
-            "by-last-used": number
-        }
-    }
-}
-
 // Default title: first 20 chars of trimmed prompt, with ellipsis if truncated
 const DEFAULT_TITLE_MAX_LENGTH = 20
 
@@ -55,79 +43,25 @@ export function generateDefaultTitle(prompt: string): string {
     return trimmed.slice(0, DEFAULT_TITLE_MAX_LENGTH).trim() + "..."
 }
 
-// Database singleton
-let dbPromise: Promise<IDBPDatabase<TemplateDB>> | null = null
-
-async function getDB(): Promise<IDBPDatabase<TemplateDB>> {
-    if (!dbPromise) {
-        dbPromise = openDB<TemplateDB>(DB_NAME, DB_VERSION, {
-            upgrade(db, oldVersion) {
-                if (oldVersion < 1) {
-                    if (!db.objectStoreNames.contains(STORE_NAME)) {
-                        const templateStore = db.createObjectStore(STORE_NAME, {
-                            keyPath: "id",
-                        })
-                        templateStore.createIndex("by-updated", "updatedAt")
-                        templateStore.createIndex("by-pinned", "pinned")
-                        templateStore.createIndex("by-run-count", "runCount")
-                        templateStore.createIndex("by-last-used", "lastUsedAt")
-                    }
-                }
-            },
-        })
-    }
-    return dbPromise
-}
-
-// Check if IndexedDB is available
-export function isIndexedDBAvailable(): boolean {
-    if (typeof window === "undefined") return false
-    try {
-        return "indexedDB" in window && window.indexedDB !== null
-    } catch {
-        return false
-    }
-}
-
-// CRUD Operations
-
 export async function getAllTemplates(): Promise<Template[]> {
-    if (!isIndexedDBAvailable()) return []
-    try {
-        const db = await getDB()
-        const templates = await db.getAll(STORE_NAME)
-        return sortTemplates(templates)
-    } catch (error) {
-        console.error("Failed to get templates:", error)
-        return []
-    }
+    return sortTemplates(await listDocuments<Template>("templates"))
 }
 
 export async function getTemplate(id: string): Promise<Template | null> {
-    if (!isIndexedDBAvailable()) return null
-    try {
-        const db = await getDB()
-        return (await db.get(STORE_NAME, id)) || null
-    } catch (error) {
-        console.error("Failed to get template:", error)
-        return null
-    }
+    return readDocument<Template>("templates", id)
 }
 
 export async function createTemplate(
     input: TemplateCreateInput,
 ): Promise<Template | null> {
-    if (!isIndexedDBAvailable()) return null
-
     const prompt = input.prompt.trim()
     if (!prompt) return null
-
     const now = Date.now()
     const template: Template = {
         id: nanoid(),
         title: input.title?.trim() || generateDefaultTitle(prompt),
         prompt,
-        description: input.description?.trim() || undefined,
+        description: input.description?.trim(),
         createdAt: now,
         updatedAt: now,
         clickCount: 0,
@@ -135,114 +69,72 @@ export async function createTemplate(
         lastUsedAt: 0,
         pinned: input.pinned ?? false,
     }
-
-    try {
-        const db = await getDB()
-        await db.put(STORE_NAME, template)
-        return template
-    } catch (error) {
-        console.error("Failed to create template:", error)
-        return null
-    }
+    await writeDocument("templates", template.id, template)
+    return template
 }
 
-export async function updateTemplate(
+let mutationTail: Promise<unknown> = Promise.resolve()
+export function updateTemplate(
     id: string,
     updates: Partial<Omit<Template, "id" | "createdAt">>,
 ): Promise<Template | null> {
-    if (!isIndexedDBAvailable()) return null
-    try {
-        const db = await getDB()
-        const existing = await db.get(STORE_NAME, id)
+    const signal = currentNimiSessionSignal()
+    const next = mutationTail.then(async () => {
+        signal.throwIfAborted()
+        const existing = await getTemplate(id)
+        signal.throwIfAborted()
         if (!existing) return null
-
-        const updated: Template = {
+        const updated = {
             ...existing,
             ...updates,
             id: existing.id,
             createdAt: existing.createdAt,
             updatedAt: Date.now(),
         }
-        await db.put(STORE_NAME, updated)
+        await writeDocument("templates", id, updated)
         return updated
-    } catch (error) {
-        console.error("Failed to update template:", error)
-        return null
-    }
+    })
+    mutationTail = next.catch(() => undefined)
+    return next
 }
 
 export async function deleteTemplate(id: string): Promise<boolean> {
-    if (!isIndexedDBAvailable()) return false
-    try {
-        const db = await getDB()
-        await db.delete(STORE_NAME, id)
-        return true
-    } catch (error) {
-        console.error("Failed to delete template:", error)
-        return false
-    }
+    await removeDocument("templates", id)
+    return true
 }
 
 export async function duplicateTemplate(
     id: string,
     copySuffix = "(copy)",
 ): Promise<Template | null> {
-    if (!isIndexedDBAvailable()) return null
-    try {
-        const db = await getDB()
-        const existing = await db.get(STORE_NAME, id)
-        if (!existing) return null
-
-        const now = Date.now()
-        const duplicate: Template = {
-            ...existing,
-            id: nanoid(),
-            title: `${existing.title} ${copySuffix}`,
-            createdAt: now,
-            updatedAt: now,
-            clickCount: 0,
-            runCount: 0,
-            lastUsedAt: 0,
-            pinned: false,
-        }
-        await db.put(STORE_NAME, duplicate)
-        return duplicate
-    } catch (error) {
-        console.error("Failed to duplicate template:", error)
-        return null
-    }
+    const signal = currentNimiSessionSignal()
+    const existing = await getTemplate(id)
+    signal.throwIfAborted()
+    if (!existing) return null
+    return createTemplate({
+        ...existing,
+        title: `${existing.title} ${copySuffix}`,
+        pinned: false,
+    })
 }
 
-// Usage tracking
-
 export async function incrementClickCount(id: string): Promise<void> {
-    if (!isIndexedDBAvailable()) return
-    try {
-        const db = await getDB()
-        const template = await db.get(STORE_NAME, id)
-        if (!template) return
-        template.clickCount += 1
-        template.updatedAt = Date.now()
-        await db.put(STORE_NAME, template)
-    } catch (error) {
-        console.error("Failed to increment click count:", error)
-    }
+    const signal = currentNimiSessionSignal()
+    const template = await getTemplate(id)
+    signal.throwIfAborted()
+    if (template)
+        await updateTemplate(id, { clickCount: template.clickCount + 1 })
 }
 
 export async function incrementRunCount(id: string): Promise<void> {
-    if (!isIndexedDBAvailable()) return
-    try {
-        const db = await getDB()
-        const template = await db.get(STORE_NAME, id)
-        if (!template) return
-        const now = Date.now()
-        template.runCount += 1
-        template.lastUsedAt = now
-        template.updatedAt = now
-        await db.put(STORE_NAME, template)
-    } catch (error) {
-        console.error("Failed to increment run count:", error)
-    }
+    const signal = currentNimiSessionSignal()
+    const template = await getTemplate(id)
+    signal.throwIfAborted()
+    if (template)
+        await updateTemplate(id, {
+            runCount: template.runCount + 1,
+            lastUsedAt: Date.now(),
+        })
 }
 
 // Search
@@ -342,6 +234,7 @@ export async function importTemplates(
     templates: Template[],
     existingTemplates: Template[],
 ): Promise<{ imported: number; skipped: number }> {
+    const signal = currentNimiSessionSignal()
     let imported = 0
     let skipped = 0
 
@@ -350,6 +243,7 @@ export async function importTemplates(
     )
 
     for (const t of templates) {
+        signal.throwIfAborted()
         const key = `${t.title}|||${t.prompt}`
         if (existingKeys.has(key)) {
             skipped++
@@ -372,12 +266,14 @@ export async function importTemplates(
             pinned: typeof t.pinned === "boolean" ? t.pinned : false,
         }
         try {
-            const db = await getDB()
-            await db.put(STORE_NAME, newTemplate)
+            await writeDocument("templates", newTemplate.id, newTemplate)
             existingKeys.add(key)
             imported++
         } catch (error) {
-            console.error("Failed to import template:", error)
+            signal.throwIfAborted()
+            throw new Error(
+                `Imported ${imported} template(s) before storage failed: ${error instanceof Error ? error.message : String(error)}`,
+            )
         }
     }
 

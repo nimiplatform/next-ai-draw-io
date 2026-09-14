@@ -79,3 +79,11 @@ ai-models.json
 
 # admin panel settings (contains secrets)
 data/
+
+# Nimi local inspection, development and package output
+/.nimi/local/
+/dist-electron-package/
+/dist-nimi/
+
+# Canonical Nimi package outputs
+/dist/

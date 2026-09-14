@@ -14,6 +14,7 @@ import {
     useCallback,
     useEffect,
     useLayoutEffect,
+    useMemo,
     useRef,
     useState,
 } from "react"
@@ -22,28 +23,27 @@ import { Toaster, toast } from "sonner"
 import { ButtonWithTooltip } from "@/components/button-with-tooltip"
 import { ChatInput } from "@/components/chat-input"
 import Image from "@/components/image-with-basepath"
-import { ModelConfigDialog } from "@/components/model-config-dialog"
+import { NimiModelConfig } from "@/components/nimi-model-config"
 import { SettingsDialog } from "@/components/settings-dialog"
 import { useDiagram } from "@/contexts/diagram-context"
 import { useDiagramToolHandlers } from "@/hooks/use-diagram-tool-handlers"
 import { useDictionary } from "@/hooks/use-dictionary"
-import { getSelectedAIConfig, useModelConfig } from "@/hooks/use-model-config"
+import { useNimiEditorPreferences } from "@/hooks/use-nimi-editor-preferences"
 import { useSessionManager } from "@/hooks/use-session-manager"
 import { useValidateDiagram } from "@/hooks/use-validate-diagram"
 import { getApiEndpoint } from "@/lib/base-path"
 import { findCachedResponse } from "@/lib/cached-responses"
 import type { DrawioTheme } from "@/lib/drawio-themes"
 import { formatMessage } from "@/lib/i18n/utils"
+import { nimiAIFetch } from "@/lib/nimi/ai-fetch"
+import { currentNimiSessionSignal } from "@/lib/nimi/client"
 import { isPdfFile, isTextFile } from "@/lib/pdf-utils"
 import { sanitizeMessages } from "@/lib/session-storage"
-import { STORAGE_KEYS } from "@/lib/storage"
 import type { UrlData } from "@/lib/url-utils"
 import { type FileData, useFileProcessor } from "@/lib/use-file-processor"
-import { useQuotaManager } from "@/lib/use-quota-manager"
 import { cn, formatXML, isRealDiagram } from "@/lib/utils"
 import type { ValidationState } from "./chat/ValidationCard"
 import { ChatMessageDisplay } from "./chat-message-display"
-import { DevXmlSimulator } from "./dev-xml-simulator"
 
 // localStorage keys for persistence
 const STORAGE_SESSION_ID_KEY = "next-ai-draw-io-session-id"
@@ -78,7 +78,6 @@ interface ChatPanelProps {
 
 // Constants for tool states
 const TOOL_ERROR_STATE = "output-error" as const
-const DEBUG = process.env.NODE_ENV === "development"
 // Increased to 3 to support VLM validation retries (matches MAX_VALIDATION_RETRIES)
 const MAX_AUTO_RETRY_COUNT = 3
 
@@ -164,21 +163,33 @@ export default function ChatPanel({
 
     const [showSettingsDialog, setShowSettingsDialog] = useState(false)
     const [showModelConfigDialog, setShowModelConfigDialog] = useState(false)
+    useEffect(
+        () =>
+            window.electronAPI?.onOpenSettings(() =>
+                setShowSettingsDialog(true),
+            ),
+        [],
+    )
 
     // Model configuration hook
-    const modelConfig = useModelConfig()
 
     // Session manager for chat history (pass URL session ID for restoration)
     const sessionManager = useSessionManager({ initialSessionId: urlSessionId })
 
     const [input, setInput] = useState("")
-    const [dailyRequestLimit, setDailyRequestLimit] = useState(0)
-    const [dailyTokenLimit, setDailyTokenLimit] = useState(0)
-    const [tpmLimit, setTpmLimit] = useState(0)
+    const sessionSignal = useRef(currentNimiSessionSignal()).current
+    const stoppedByUser = useRef(false)
+    const generationController = useRef(new AbortController())
+    const beginGeneration = () => {
+        sessionSignal.throwIfAborted()
+        generationController.current.abort()
+        generationController.current = new AbortController()
+        stoppedByUser.current = false
+    }
     const [minimalStyle, setMinimalStyle] = useState(false)
-    const [vlmValidationEnabled, setVlmValidationEnabled] = useState(false)
-    const [customSystemMessage, setCustomSystemMessage] = useState("")
-    const [maxOutputTokens, setMaxOutputTokens] = useState("")
+    const editorPreferences = useNimiEditorPreferences()
+    const { vlmValidationEnabled, customSystemMessage, maxOutputTokens } =
+        editorPreferences.preferences
     const [shouldFocusInput, setShouldFocusInput] = useState(false)
 
     // Restore input from sessionStorage on mount (when ChatPanel remounts due to key change)
@@ -188,50 +199,6 @@ export default function ChatPanel({
             setInput(savedInput)
         }
     }, [])
-
-    // Load VLM validation setting from localStorage on mount
-    useEffect(() => {
-        const stored = localStorage.getItem(STORAGE_KEYS.vlmValidationEnabled)
-        if (stored !== null) {
-            setVlmValidationEnabled(stored === "true")
-        }
-    }, [])
-
-    // Load custom system message from localStorage on mount
-    useEffect(() => {
-        const stored = localStorage.getItem(STORAGE_KEYS.customSystemMessage)
-        if (stored !== null) {
-            setCustomSystemMessage(stored)
-        }
-    }, [])
-
-    // Load output token budget from localStorage on mount
-    useEffect(() => {
-        const stored = localStorage.getItem(STORAGE_KEYS.maxOutputTokens)
-        if (stored !== null) {
-            setMaxOutputTokens(stored)
-        }
-    }, [])
-
-    // Check config on mount
-    useEffect(() => {
-        fetch(getApiEndpoint("/api/config"))
-            .then((res) => res.json())
-            .then((data) => {
-                setDailyRequestLimit(data.dailyRequestLimit || 0)
-                setDailyTokenLimit(data.dailyTokenLimit || 0)
-                setTpmLimit(data.tpmLimit || 0)
-            })
-            .catch(() => {})
-    }, [])
-
-    // Quota management using extracted hook
-    const quotaManager = useQuotaManager({
-        dailyRequestLimit,
-        dailyTokenLimit,
-        tpmLimit,
-        onConfigModel: () => setShowModelConfigDialog(true),
-    })
 
     // Generate a unique session ID for Langfuse tracing (restore from localStorage if available)
     const [sessionId, setSessionId] = useState(() => {
@@ -319,21 +286,18 @@ export default function ChatPanel({
 
     // Handler for VLM validation setting change
     const handleVlmValidationChange = useCallback((value: boolean) => {
-        setVlmValidationEnabled(value)
-        localStorage.setItem(STORAGE_KEYS.vlmValidationEnabled, String(value))
+        editorPreferences.update({ vlmValidationEnabled: value })
     }, [])
 
     // Handler for custom system message change
     const handleCustomSystemMessageChange = useCallback((value: string) => {
-        setCustomSystemMessage(value)
-        localStorage.setItem(STORAGE_KEYS.customSystemMessage, value)
+        editorPreferences.update({ customSystemMessage: value })
     }, [])
 
     // Handler for output token budget change (empty string = use server default)
     const handleMaxOutputTokensChange = useCallback((value: string) => {
         const digitsOnly = value.replace(/\D/g, "")
-        setMaxOutputTokens(digitsOnly)
-        localStorage.setItem(STORAGE_KEYS.maxOutputTokens, digitsOnly)
+        editorPreferences.update({ maxOutputTokens: digitsOnly })
     }, [])
 
     // Ref to store the sendMessage function for use in callbacks
@@ -342,6 +306,7 @@ export default function ChatPanel({
     // Callback to improve diagram with validation suggestions
     const handleImproveWithSuggestions = useCallback((feedback: string) => {
         if (sendMessageRef.current) {
+            beginGeneration()
             // Send the feedback as a new user message to trigger regeneration
             sendMessageRef.current({
                 role: "user",
@@ -351,10 +316,11 @@ export default function ChatPanel({
     }, [])
 
     // VLM validation hook using AI SDK's useObject
-    const { validateWithFallback } = useValidateDiagram()
+    const { validate, stop: stopValidation } = useValidateDiagram()
 
     // Diagram tool handlers (display_diagram, edit_diagram, append_diagram)
     const { handleToolCall } = useDiagramToolHandlers({
+        operationSignal: generationController.current.signal,
         partialXmlRef,
         editDiagramOriginalXmlRef,
         chartXMLRef,
@@ -362,11 +328,73 @@ export default function ChatPanel({
         onFetchChart,
         onExport,
         captureValidationPng,
-        validateDiagram: validateWithFallback,
+        validateDiagram: validate,
         enableVlmValidation: vlmValidationEnabled,
         sessionId,
         onValidationStateChange: handleValidationStateChange,
     })
+
+    const requestConfigRef = useRef({
+        ready: editorPreferences.ready,
+        sessionId,
+        customSystemMessage,
+        maxOutputTokens,
+        minimalStyle,
+    })
+    requestConfigRef.current = {
+        ready: editorPreferences.ready,
+        sessionId,
+        customSystemMessage,
+        maxOutputTokens,
+        minimalStyle,
+    }
+    const transport = useMemo(
+        () =>
+            new DefaultChatTransport({
+                api: getApiEndpoint("/api/chat"),
+                fetch: nimiAIFetch,
+                prepareSendMessagesRequest: ({
+                    id,
+                    messages,
+                    trigger,
+                    messageId,
+                    body,
+                    headers,
+                }) => {
+                    sessionSignal.throwIfAborted()
+                    const config = requestConfigRef.current
+                    if (!config.ready)
+                        throw new Error(
+                            "Drawing preferences have not loaded. Retry their connection before generating.",
+                        )
+                    const requestHeaders = new Headers(headers)
+                    requestHeaders.set(
+                        "x-minimal-style",
+                        String(config.minimalStyle),
+                    )
+                    if (config.maxOutputTokens)
+                        requestHeaders.set(
+                            "x-max-output-tokens",
+                            config.maxOutputTokens,
+                        )
+                    else requestHeaders.delete("x-max-output-tokens")
+                    return {
+                        body: {
+                            ...body,
+                            id,
+                            messages,
+                            trigger,
+                            messageId,
+                            xml: chartXMLRef.current,
+                            sessionId: config.sessionId,
+                            customSystemMessage: config.customSystemMessage,
+                        },
+                        headers: requestHeaders,
+                    }
+                },
+            }),
+        [],
+    )
 
     const {
         messages,
@@ -377,97 +405,31 @@ export default function ChatPanel({
         setMessages,
         stop,
     } = useChat({
-        transport: new DefaultChatTransport({
-            api: getApiEndpoint("/api/chat"),
-        }),
+        transport,
         onToolCall: async ({ toolCall }) => {
             await handleToolCall({ toolCall }, addToolOutput)
         },
         onError: (error) => {
-            // Handle server-side quota limit (429 response)
-            // AI SDK puts the full response body in error.message for non-OK responses
+            if (sessionSignal.aborted || stoppedByUser.current) return
+            let message = error.message
             try {
-                const data = JSON.parse(error.message)
-                if (data.type === "request") {
-                    quotaManager.showQuotaLimitToast(data.used, data.limit)
-                    return
-                }
-                if (data.type === "token") {
-                    quotaManager.showTokenLimitToast(data.used, data.limit)
-                    return
-                }
-                if (data.type === "tpm") {
-                    quotaManager.showTPMLimitToast(data.limit)
-                    return
-                }
+                const detail = JSON.parse(message)
+                if (typeof detail.error === "string") message = detail.error
             } catch {
-                // Not JSON, fall through to string matching for backwards compatibility
+                /* SDK errors already carry a human-readable message. */
             }
-
-            // Fallback to string matching
-            if (error.message.includes("Daily request limit")) {
-                quotaManager.showQuotaLimitToast()
-                return
-            }
-            if (error.message.includes("Daily token limit")) {
-                quotaManager.showTokenLimitToast()
-                return
-            }
-            if (
-                error.message.includes("Rate limit exceeded") ||
-                error.message.includes("tokens per minute")
-            ) {
-                quotaManager.showTPMLimitToast()
-                return
-            }
-
-            // Silence access code error in console since it's handled by UI
-            if (!error.message.includes("Invalid or missing access code")) {
-                console.error("Chat error:", error)
-            }
-
-            // Translate technical errors into user-friendly messages
-            // The server now handles detailed error messages, so we can display them directly.
-            // But we still handle connection/network errors that happen before reaching the server.
-            let friendlyMessage = error.message
-
-            // Simple check for network errors if message is generic
-            if (friendlyMessage === "Failed to fetch") {
-                friendlyMessage = "Network error. Please check your connection."
-            }
-
-            // Truncated tool input error (model output limit too low)
-            if (friendlyMessage.includes("toolUse.input is invalid")) {
-                friendlyMessage =
-                    "Output was truncated before the diagram could be generated. Try a simpler request or increase the maxOutputLength."
-            }
-
-            // Translate image not supported error
-            if (
-                friendlyMessage.includes("image content block") ||
-                friendlyMessage.toLowerCase().includes("image_url")
-            ) {
-                friendlyMessage = "This model doesn't support image input."
-            }
-
-            // Add system message for error so it can be cleared
-            setMessages((currentMessages) => {
-                const errorMessage = {
+            setMessages((currentMessages) => [
+                ...currentMessages,
+                {
                     id: `error-${Date.now()}`,
                     role: "system" as const,
-                    content: friendlyMessage,
-                    parts: [{ type: "text" as const, text: friendlyMessage }],
-                }
-                return [...currentMessages, errorMessage]
-            })
-
-            if (error.message.includes("Invalid or missing access code")) {
-                // Show settings dialog to help user fix it
-                setShowSettingsDialog(true)
-            }
+                    parts: [{ type: "text" as const, text: message }],
+                },
+            ])
         },
         onFinish: () => {},
         sendAutomaticallyWhen: ({ messages }) => {
+            if (stoppedByUser.current || sessionSignal.aborted) return false
             const isInContinuationMode = partialXmlRef.current.length > 0
 
             const shouldRetry = hasToolErrors(
@@ -881,7 +843,11 @@ export default function ChatPanel({
                 setFiles([])
                 setUrlData(new Map())
             } catch (error) {
-                console.error("Error fetching chart data:", error)
+                toast.error(
+                    error instanceof Error
+                        ? error.message
+                        : "Could not read the drawing or attachments.",
+                )
             }
         }
     }
@@ -942,7 +908,9 @@ export default function ChatPanel({
         // Save current session before creating new one
         if (sessionManager.isAvailable && messages.length > 0) {
             const sessionData = await buildSessionData({ withThumbnail: true })
+
             await sessionManager.saveCurrentSession(sessionData)
+
             // Refresh sessions list to ensure dropdown shows the saved session
             await sessionManager.refreshSessions()
         }
@@ -1044,11 +1012,26 @@ export default function ChatPanel({
 
     // Handle stop button click
     const handleStop = useCallback(() => {
+        stoppedByUser.current = true
+        generationController.current.abort(new Error("Stopped by user"))
+        stopValidation()
+        setValidationStates((states) =>
+            Object.fromEntries(
+                Object.entries(states).map(([id, state]) => [
+                    id,
+                    state.status === "validating" ||
+                    state.status === "capturing"
+                        ? { ...state, status: "skipped" as const }
+                        : state,
+                ]),
+            ),
+        )
         const lastMessage = messages[messages.length - 1]
         const toolParts = lastMessage?.parts?.filter(
             (part: any) =>
                 part.type?.startsWith("tool-") &&
-                part.state === "input-streaming",
+                (part.state === "input-streaming" ||
+                    part.state === "input-available"),
         )
 
         toolParts?.forEach((part: any) => {
@@ -1063,7 +1046,7 @@ export default function ChatPanel({
         })
 
         stop()
-    }, [messages, addToolOutput, stop])
+    }, [messages, addToolOutput, stop, stopValidation])
 
     // Send chat message with headers
     const sendChatMessage = (
@@ -1072,51 +1055,17 @@ export default function ChatPanel({
         previousXml: string,
         sessionId: string,
     ) => {
+        beginGeneration()
         // Reset all retry/continuation state on user-initiated message
         autoRetryCountRef.current = 0
         continuationRetryCountRef.current = 0
         partialXmlRef.current = ""
-
-        const config = getSelectedAIConfig()
 
         sendMessage(
             { parts },
             {
                 body: { xml, previousXml, sessionId, customSystemMessage },
                 headers: {
-                    "x-access-code": config.accessCode,
-                    ...(config.aiProvider && {
-                        "x-ai-provider": config.aiProvider,
-                        ...(config.aiBaseUrl && {
-                            "x-ai-base-url": config.aiBaseUrl,
-                        }),
-                        ...(config.aiApiKey && {
-                            "x-ai-api-key": config.aiApiKey,
-                        }),
-                        ...(config.aiModel && { "x-ai-model": config.aiModel }),
-                        // AWS Bedrock credentials
-                        ...(config.awsAccessKeyId && {
-                            "x-aws-access-key-id": config.awsAccessKeyId,
-                        }),
-                        ...(config.awsSecretAccessKey && {
-                            "x-aws-secret-access-key":
-                                config.awsSecretAccessKey,
-                        }),
-                        ...(config.awsRegion && {
-                            "x-aws-region": config.awsRegion,
-                        }),
-                        ...(config.awsSessionToken && {
-                            "x-aws-session-token": config.awsSessionToken,
-                        }),
-                        // Vertex AI credentials (Express Mode)
-                        ...(config.vertexApiKey && {
-                            "x-vertex-api-key": config.vertexApiKey,
-                        }),
-                    }),
-                    // Send selected model ID for server model lookup (apiKeyEnv/baseUrlEnv)
-                    ...(config.selectedModelId && {
-                        "x-selected-model-id": config.selectedModelId,
-                    }),
                     ...(minimalStyle && {
                         "x-minimal-style": "true",
                     }),
@@ -1141,18 +1090,28 @@ export default function ChatPanel({
         for (const file of files) {
             if (isPdfFile(file)) {
                 const extracted = pdfData.get(file)
-                if (extracted?.text) {
+                if (!extracted?.text.trim())
+                    throw new Error(
+                        `${file.name}: no extracted text is available.`,
+                    )
+                if (extracted.text) {
                     userText += `\n\n[PDF: ${file.name}]\n${extracted.text}`
                 }
             } else if (isTextFile(file)) {
                 const extracted = pdfData.get(file)
-                if (extracted?.text) {
+                if (!extracted?.text.trim())
+                    throw new Error(
+                        `${file.name}: no extracted text is available.`,
+                    )
+                if (extracted.text) {
                     userText += `\n\n[File: ${file.name}]\n${extracted.text}`
                 }
             } else if (imageParts) {
                 // Handle as image (only if imageParts array provided)
                 const reader = new FileReader()
-                const dataUrl = await new Promise<string>((resolve) => {
+                const dataUrl = await new Promise<string>((resolve, reject) => {
+                    reader.onerror = () =>
+                        reject(new Error(`Could not read image ${file.name}.`))
                     reader.onload = () => resolve(reader.result as string)
                     reader.readAsDataURL(file)
                 })
@@ -1416,22 +1375,26 @@ export default function ChatPanel({
                 />
             </main>
 
-            {/* Dev XML Streaming Simulator - only in development */}
-            {DEBUG && (
-                <DevXmlSimulator
-                    setMessages={setMessages}
-                    onDisplayChart={onDisplayChart}
-                    onShowQuotaToast={() =>
-                        quotaManager.showQuotaLimitToast(50, 50)
-                    }
-                />
-            )}
-
             {/* Input */}
             <footer
                 className={`${isMobile ? "p-2" : "p-4"} border-t border-border/50 bg-card/50`}
             >
+                {editorPreferences.error && (
+                    <div role="alert" className="mb-2 text-sm text-destructive">
+                        {editorPreferences.error}{" "}
+                        <button
+                            type="button"
+                            className="underline"
+                            onClick={() => {
+                                void editorPreferences.retry()
+                            }}
+                        >
+                            Retry preferences
+                        </button>
+                    </div>
+                )}
                 <ChatInput
+                    initializing={!editorPreferences.ready}
                     input={input}
                     status={status}
                     onSubmit={onFormSubmit}
@@ -1444,11 +1407,7 @@ export default function ChatPanel({
                     onUrlChange={setUrlData}
                     sessionId={sessionId}
                     error={error}
-                    models={modelConfig.models}
-                    selectedModelId={modelConfig.selectedModelId}
-                    onModelSelect={modelConfig.setSelectedModelId}
                     onConfigureModels={() => setShowModelConfigDialog(true)}
-                    showUnvalidatedModels={modelConfig.showUnvalidatedModels}
                     shouldFocus={shouldFocusInput}
                     onFocused={() => setShouldFocusInput(false)}
                 />
@@ -1467,15 +1426,15 @@ export default function ChatPanel({
                 onVlmValidationChange={handleVlmValidationChange}
                 customSystemMessage={customSystemMessage}
                 onCustomSystemMessageChange={handleCustomSystemMessageChange}
+                preferencesReady={editorPreferences.ready}
                 maxOutputTokens={maxOutputTokens}
                 onMaxOutputTokensChange={handleMaxOutputTokensChange}
                 onOpenModelConfig={() => setShowModelConfigDialog(true)}
             />
 
-            <ModelConfigDialog
+            <NimiModelConfig
                 open={showModelConfigDialog}
                 onOpenChange={setShowModelConfigDialog}
-                modelConfig={modelConfig}
             />
         </div>
     )

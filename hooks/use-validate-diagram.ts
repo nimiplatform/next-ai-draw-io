@@ -5,21 +5,15 @@
  */
 
 import { experimental_useObject as useObject } from "@ai-sdk/react"
-import { useCallback, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { getApiEndpoint } from "@/lib/base-path"
+import { nimiAIFetch } from "@/lib/nimi/ai-fetch"
 import {
     type ValidationResult,
     ValidationResultSchema,
 } from "@/lib/validation-schema"
 
 export type { ValidationResult }
-
-// Default valid result for fallback cases
-const DEFAULT_VALID_RESULT: ValidationResult = {
-    valid: true,
-    issues: [],
-    suggestions: [],
-}
 
 interface UseValidateDiagramOptions {
     onSuccess?: (result: ValidationResult) => void
@@ -36,8 +30,15 @@ export function useValidateDiagram(options: UseValidateDiagramOptions = {}) {
     const { onSuccess, onError } = options
     const pendingValidationRef = useRef<PendingValidation | null>(null)
 
-    const { object, submit, isLoading, error, stop } = useObject({
+    const {
+        object,
+        submit,
+        isLoading,
+        error,
+        stop: stopStream,
+    } = useObject({
         api: getApiEndpoint("/api/validate-diagram"),
+        fetch: nimiAIFetch,
         schema: ValidationResultSchema,
         onFinish: ({
             object,
@@ -62,6 +63,11 @@ export function useValidateDiagram(options: UseValidateDiagramOptions = {}) {
                 onSuccess?.(result)
                 pendingValidationRef.current?.resolve(result)
                 pendingValidationRef.current = null
+            } else {
+                pendingValidationRef.current?.reject(
+                    new Error("Visual validation returned no result."),
+                )
+                pendingValidationRef.current = null
             }
         },
         onError: (err: Error) => {
@@ -71,6 +77,15 @@ export function useValidateDiagram(options: UseValidateDiagramOptions = {}) {
             pendingValidationRef.current = null
         },
     })
+
+    const stop = useCallback(() => {
+        stopStream()
+        pendingValidationRef.current?.reject(
+            new Error("Visual validation was canceled."),
+        )
+        pendingValidationRef.current = null
+    }, [stopStream])
+    useEffect(() => () => stop(), [stop])
 
     /**
      * Validate a diagram image.
@@ -83,6 +98,7 @@ export function useValidateDiagram(options: UseValidateDiagramOptions = {}) {
         ): Promise<ValidationResult> => {
             // Reject any pending validation to prevent promise leaks
             if (pendingValidationRef.current) {
+                stopStream()
                 pendingValidationRef.current.reject(
                     new Error("Validation superseded by new request"),
                 )
@@ -97,35 +113,12 @@ export function useValidateDiagram(options: UseValidateDiagramOptions = {}) {
                 submit({ imageData, sessionId })
             })
         },
-        [submit],
-    )
-
-    /**
-     * Validate with fallback - returns default valid result on error.
-     * Use this to avoid blocking the user on validation failures.
-     */
-    const validateWithFallback = useCallback(
-        async (
-            imageData: string,
-            sessionId?: string,
-        ): Promise<ValidationResult> => {
-            try {
-                return await validate(imageData, sessionId)
-            } catch (error) {
-                console.warn(
-                    "[useValidateDiagram] Validation failed, using fallback:",
-                    error,
-                )
-                return DEFAULT_VALID_RESULT
-            }
-        },
-        [validate],
+        [submit, stopStream],
     )
 
     return {
         // Validation functions
         validate,
-        validateWithFallback,
         stop,
 
         // State

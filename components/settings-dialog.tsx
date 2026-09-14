@@ -1,9 +1,10 @@
 "use client"
 
+import { invokeShell } from "@nimiplatform/kit/shell/renderer/bridge"
+
 import { ChevronRight, Github, Info, Moon, Sun, Tag } from "lucide-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Suspense, useCallback, useEffect, useState } from "react"
-import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -24,7 +25,6 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { useDictionary } from "@/hooks/use-dictionary"
-import { getApiEndpoint } from "@/lib/base-path"
 import type { DrawioTheme } from "@/lib/drawio-themes"
 import { i18n, type Locale } from "@/lib/i18n/config"
 import { STORAGE_KEYS } from "@/lib/storage"
@@ -62,6 +62,7 @@ const LANGUAGE_LABELS: Record<Locale, string> = {
 }
 
 interface SettingsDialogProps {
+    preferencesReady?: boolean
     open: boolean
     onOpenChange: (open: boolean) => void
     drawioUi: DrawioTheme
@@ -79,17 +80,8 @@ interface SettingsDialogProps {
     onMaxOutputTokensChange?: (value: string) => void
 }
 
-export const STORAGE_ACCESS_CODE_KEY = "next-ai-draw-io-access-code"
-const STORAGE_ACCESS_CODE_REQUIRED_KEY = "next-ai-draw-io-access-code-required"
-
-function getStoredAccessCodeRequired(): boolean | null {
-    if (typeof window === "undefined") return null
-    const stored = localStorage.getItem(STORAGE_ACCESS_CODE_REQUIRED_KEY)
-    if (stored === null) return null
-    return stored === "true"
-}
-
 function SettingsContent({
+    preferencesReady = true,
     open,
     onOpenChange,
     drawioUi,
@@ -110,12 +102,6 @@ function SettingsContent({
     const router = useRouter()
     const pathname = usePathname() || "/"
     const search = useSearchParams()
-    const [accessCode, setAccessCode] = useState("")
-    const [isVerifying, setIsVerifying] = useState(false)
-    const [error, setError] = useState("")
-    const [accessCodeRequired, setAccessCodeRequired] = useState(
-        () => getStoredAccessCodeRequired() ?? false,
-    )
     const [currentLang, setCurrentLang] = useState("en")
     const [sendShortcut, setSendShortcut] = useState("ctrl-enter")
 
@@ -133,36 +119,6 @@ function SettingsContent({
         [],
     )
 
-    // Proxy settings state (Electron only)
-    const [httpProxy, setHttpProxy] = useState("")
-    const [httpsProxy, setHttpsProxy] = useState("")
-    const [isApplyingProxy, setIsApplyingProxy] = useState(false)
-
-    useEffect(() => {
-        // Re-fetch config whenever the dialog opens to ensure we always show
-        // the access code input if the server requires it. This fixes the case
-        // where a stale localStorage cache (from before ACCESS_CODE_LIST was
-        // configured) would hide the access code input.
-        if (!open) return
-
-        fetch(getApiEndpoint("/api/config"))
-            .then((res) => {
-                if (!res.ok) throw new Error(`HTTP ${res.status}`)
-                return res.json()
-            })
-            .then((data) => {
-                const required = data?.accessCodeRequired === true
-                localStorage.setItem(
-                    STORAGE_ACCESS_CODE_REQUIRED_KEY,
-                    String(required),
-                )
-                setAccessCodeRequired(required)
-            })
-            .catch(() => {
-                // Keep existing cached value on error
-            })
-    }, [open])
-
     // Detect current language from pathname
     useEffect(() => {
         const seg = pathname.split("/").filter(Boolean)
@@ -176,10 +132,6 @@ function SettingsContent({
 
     useEffect(() => {
         if (open) {
-            const storedCode =
-                localStorage.getItem(STORAGE_ACCESS_CODE_KEY) || ""
-            setAccessCode(storedCode)
-
             const storedSendShortcut = localStorage.getItem(
                 STORAGE_KEYS.sendShortcut,
             )
@@ -195,16 +147,6 @@ function SettingsContent({
                 localStorage.getItem(STORAGE_KEYS.showQuickExamples) !==
                     "false",
             )
-
-            setError("")
-
-            // Load proxy settings (Electron only)
-            if (window.electronAPI?.getProxy) {
-                window.electronAPI.getProxy().then((config) => {
-                    setHttpProxy(config.httpProxy || "")
-                    setHttpsProxy(config.httpsProxy || "")
-                })
-            }
         }
     }, [open])
 
@@ -212,12 +154,11 @@ function SettingsContent({
         // Save locale to localStorage for persistence across restarts
         localStorage.setItem("next-ai-draw-io-locale", lang)
 
-        // Notify Electron main process to update its menu language
-        if (window.electronAPI?.setUserLocale) {
-            window.electronAPI.setUserLocale(lang).catch((error) => {
-                console.error("Failed to sync locale with Electron:", error)
-            })
-        }
+        void invokeShell("drawio.locale.set", { locale: lang }).catch(
+            (error) => {
+                console.error("Could not change the menu language:", error)
+            },
+        )
 
         const parts = pathname.split("/")
         if (parts.length > 1 && i18n.locales.includes(parts[1] as Locale)) {
@@ -228,86 +169,6 @@ function SettingsContent({
         const newPath = parts.join("/") || "/"
         const searchStr = search?.toString() ? `?${search.toString()}` : ""
         router.push(newPath + searchStr)
-    }
-
-    const handleSave = async () => {
-        if (!accessCodeRequired) return
-
-        setError("")
-        setIsVerifying(true)
-
-        try {
-            const response = await fetch(
-                getApiEndpoint("/api/verify-access-code"),
-                {
-                    method: "POST",
-                    headers: {
-                        "x-access-code": accessCode.trim(),
-                    },
-                },
-            )
-
-            const data = await response.json()
-
-            if (!data.valid) {
-                setError(data.message || dict.errors.invalidAccessCode)
-                return
-            }
-
-            localStorage.setItem(STORAGE_ACCESS_CODE_KEY, accessCode.trim())
-            onOpenChange(false)
-        } catch {
-            setError(dict.errors.networkError)
-        } finally {
-            setIsVerifying(false)
-        }
-    }
-
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter") {
-            e.preventDefault()
-            handleSave()
-        }
-    }
-
-    const handleApplyProxy = async () => {
-        if (!window.electronAPI?.setProxy) return
-
-        // Validate proxy URLs (must start with http:// or https://)
-        const validateProxyUrl = (url: string): boolean => {
-            if (!url) return true // Empty is OK
-            return url.startsWith("http://") || url.startsWith("https://")
-        }
-
-        const trimmedHttp = httpProxy.trim()
-        const trimmedHttps = httpsProxy.trim()
-
-        if (trimmedHttp && !validateProxyUrl(trimmedHttp)) {
-            toast.error("HTTP Proxy must start with http:// or https://")
-            return
-        }
-        if (trimmedHttps && !validateProxyUrl(trimmedHttps)) {
-            toast.error("HTTPS Proxy must start with http:// or https://")
-            return
-        }
-
-        setIsApplyingProxy(true)
-        try {
-            const result = await window.electronAPI.setProxy({
-                httpProxy: trimmedHttp || undefined,
-                httpsProxy: trimmedHttps || undefined,
-            })
-
-            if (result.success) {
-                toast.success(dict.settings.proxyApplied)
-            } else {
-                toast.error(result.error || "Failed to apply proxy settings")
-            }
-        } catch {
-            toast.error("Failed to apply proxy settings")
-        } finally {
-            setIsApplyingProxy(false)
-        }
     }
 
     return (
@@ -326,8 +187,8 @@ function SettingsContent({
                     {/* API Keys & Models */}
                     {onOpenModelConfig && (
                         <SettingItem
-                            label={dict.settings.apiKeysModels}
-                            description={dict.settings.apiKeysModelsDescription}
+                            label={dict.nimi.models}
+                            description={dict.nimi.modelsDescription}
                         >
                             <Button
                                 variant="ghost"
@@ -337,56 +198,11 @@ function SettingsContent({
                                     onOpenChange(false)
                                     onOpenModelConfig()
                                 }}
-                                aria-label={dict.settings.apiKeysModels}
+                                aria-label={dict.nimi.models}
                             >
                                 <ChevronRight className="h-4 w-4" />
                             </Button>
                         </SettingItem>
-                    )}
-
-                    {/* Access Code (conditional) */}
-                    {accessCodeRequired && (
-                        <div className="py-4 first:pt-0 space-y-3">
-                            <div className="space-y-0.5">
-                                <Label
-                                    htmlFor="access-code"
-                                    className="text-sm font-medium"
-                                >
-                                    {dict.settings.accessCode}
-                                </Label>
-                                <p className="text-xs text-muted-foreground">
-                                    {dict.settings.accessCodeDescription}
-                                </p>
-                            </div>
-                            <div className="flex gap-2">
-                                <Input
-                                    id="access-code"
-                                    type="password"
-                                    value={accessCode}
-                                    onChange={(e) =>
-                                        setAccessCode(e.target.value)
-                                    }
-                                    onKeyDown={handleKeyDown}
-                                    placeholder={
-                                        dict.settings.accessCodePlaceholder
-                                    }
-                                    autoComplete="off"
-                                    className="h-9"
-                                />
-                                <Button
-                                    onClick={handleSave}
-                                    disabled={isVerifying || !accessCode.trim()}
-                                    className="h-9 px-4 rounded-xl"
-                                >
-                                    {isVerifying ? "..." : dict.common.save}
-                                </Button>
-                            </div>
-                            {error && (
-                                <p className="text-xs text-destructive">
-                                    {error}
-                                </p>
-                            )}
-                        </div>
                     )}
 
                     {/* Language */}
@@ -557,6 +373,7 @@ function SettingsContent({
                         <div className="flex items-center gap-2">
                             <Switch
                                 id="vlm-validation"
+                                disabled={!preferencesReady}
                                 checked={vlmValidationEnabled}
                                 onCheckedChange={onVlmValidationChange}
                             />
@@ -583,6 +400,7 @@ function SettingsContent({
                         </div>
                         <Textarea
                             id="custom-system-message"
+                            disabled={!preferencesReady}
                             value={customSystemMessage}
                             onChange={(e) =>
                                 onCustomSystemMessageChange(e.target.value)
@@ -604,11 +422,12 @@ function SettingsContent({
                             id="max-output-tokens"
                             type="text"
                             inputMode="numeric"
+                            disabled={!preferencesReady}
                             value={maxOutputTokens}
                             onChange={(e) =>
                                 onMaxOutputTokensChange(e.target.value)
                             }
-                            placeholder="64000"
+                            placeholder="Nimi default"
                             className="h-9 w-28 text-sm"
                         />
                     </SettingItem>
@@ -649,54 +468,6 @@ function SettingsContent({
                             </SelectContent>
                         </Select>
                     </SettingItem>
-
-                    {/* Proxy Settings - Electron only */}
-                    {typeof window !== "undefined" &&
-                        window.electronAPI?.isElectron && (
-                            <div className="py-4 space-y-3">
-                                <div className="space-y-0.5">
-                                    <Label className="text-sm font-medium">
-                                        {dict.settings.proxy}
-                                    </Label>
-                                    <p className="text-xs text-muted-foreground">
-                                        {dict.settings.proxyDescription}
-                                    </p>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Input
-                                        id="http-proxy"
-                                        type="text"
-                                        value={httpProxy}
-                                        onChange={(e) =>
-                                            setHttpProxy(e.target.value)
-                                        }
-                                        placeholder={`${dict.settings.httpProxy}: http://proxy:8080`}
-                                        className="h-9"
-                                    />
-                                    <Input
-                                        id="https-proxy"
-                                        type="text"
-                                        value={httpsProxy}
-                                        onChange={(e) =>
-                                            setHttpsProxy(e.target.value)
-                                        }
-                                        placeholder={`${dict.settings.httpsProxy}: http://proxy:8080`}
-                                        className="h-9"
-                                    />
-                                </div>
-
-                                <Button
-                                    onClick={handleApplyProxy}
-                                    disabled={isApplyingProxy}
-                                    className="h-9 px-4 rounded-xl w-full"
-                                >
-                                    {isApplyingProxy
-                                        ? "..."
-                                        : dict.settings.applyProxy}
-                                </Button>
-                            </div>
-                        )}
                 </div>
             </div>
 

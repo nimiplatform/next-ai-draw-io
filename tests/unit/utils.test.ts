@@ -1,5 +1,27 @@
 import { describe, expect, it } from "vitest"
-import { cn, isMxCellXmlComplete, wrapWithMxFile } from "@/lib/utils"
+import {
+    cn,
+    hasDiagramCells,
+    isMxCellXmlComplete,
+    wrapWithMxFile,
+} from "@/lib/utils"
+
+describe("history eligibility", () => {
+    it("does not save an empty canvas just because it has long view settings", () => {
+        expect(
+            hasDiagramCells(
+                `<mxGraphModel description="${"settings ".repeat(80)}"><root><mxCell id="0"/><mxCell id="1" parent="0"/></root></mxGraphModel>`,
+            ),
+        ).toBe(false)
+    })
+    it("keeps a small drawing with one actual shape", () => {
+        expect(
+            hasDiagramCells(
+                '<mxGraphModel><root><mxCell id="2" vertex="1" parent="1"/></root></mxGraphModel>',
+            ),
+        ).toBe(true)
+    })
+})
 
 describe("isMxCellXmlComplete", () => {
     it("returns false for empty/null input", () => {

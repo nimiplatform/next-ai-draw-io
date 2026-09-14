@@ -1,4 +1,5 @@
 "use client"
+import { applyNimiThemeAttributes } from "@nimiplatform/kit/ui"
 import { usePathname, useRouter } from "next/navigation"
 import { Suspense, useCallback, useEffect, useRef, useState } from "react"
 import { DrawIoEmbed } from "react-drawio"
@@ -29,6 +30,14 @@ export default function Home() {
     const [isChatVisible, setIsChatVisible] = useState(true)
     const [drawioUi, setDrawioUi] = useState<DrawioTheme>("kennedy")
     const [darkMode, setDarkMode] = useState(false)
+    useEffect(
+        () =>
+            applyNimiThemeAttributes({
+                scheme: darkMode ? "dark" : "light",
+                accentPack: "nimi-accent",
+            }),
+        [darkMode],
+    )
     const [isLoaded, setIsLoaded] = useState(false)
     const [isDrawioReady, setIsDrawioReady] = useState(false)
     const [isElectron, setIsElectron] = useState(false)

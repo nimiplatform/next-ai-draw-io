@@ -19,6 +19,12 @@ English | [中文](./docs/cn/README_CN.md) | [日本語](./docs/ja/README_JA.md)
 
 A Next.js web application that integrates AI capabilities with draw.io diagrams. Create, modify, and enhance diagrams through natural language commands and AI-assisted visualization.
 
+## Nimi App adaptation
+
+This fork adapts [DayuanJiang/next-ai-draw-io](https://github.com/DayuanJiang/next-ai-draw-io), starting at commit `027cd88c9088ad5b2d6deff4641dc47ded06afd2` (version 0.4.16), for the Nimi ecosystem. The upstream project, attribution, and [Apache-2.0 license](./LICENSE) are retained. Nimi integration changes are maintained by the Nimi adaptation contributors.
+
+The adaptation preserves the Next.js application, draw.io editor, generation and editing tools, document/image inputs, history, templates, and exports. See [Nimi setup and acceptance](./docs/nimi-adaptation.md) for pinned dependencies, architecture, development instructions, and the verified status. The upstream deployment/provider instructions below describe the original application; they do not establish Nimi App access or acceptance.
+
 > Note: Thanks to <img src="https://raw.githubusercontent.com/DayuanJiang/next-ai-draw-io/main/public/doubao-color.png" alt="" height="20" /> [ByteDance Doubao](https://www.volcengine.com/activity/codingplan?ac=MMAP8JTTCAQ2&rc=Z9Z3LDTJ&utm_campaign=drawio&utm_content=drawio&utm_medium=devrel&utm_source=OWO&utm_term=drawio) sponsorship, the demo site now uses the powerful glm-4.7 model!
 
 <p align="center">

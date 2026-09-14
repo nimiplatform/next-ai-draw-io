@@ -1,6 +1,8 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
+import { toast } from "sonner"
+import { currentNimiSessionSignal } from "@/lib/nimi/client"
 import {
     type ChatSession,
     createEmptySession,
@@ -9,8 +11,7 @@ import {
     extractTitle,
     getAllSessionMetadata,
     getSession,
-    isIndexedDBAvailable,
-    migrateFromLocalStorage,
+    isStorageAvailable,
     type SessionMetadata,
     type StoredMessage,
     saveSession,
@@ -53,6 +54,7 @@ export function useSessionManager(
     options: UseSessionManagerOptions = {},
 ): UseSessionManagerReturn {
     const { initialSessionId } = options
+    const sessionSignal = useRef(currentNimiSessionSignal()).current
     const [sessions, setSessions] = useState<SessionMetadata[]>([])
     const [currentSessionId, setCurrentSessionId] = useState<string | null>(
         null,
@@ -69,7 +71,7 @@ export function useSessionManager(
 
     // Load sessions list
     const refreshSessions = useCallback(async () => {
-        if (!isIndexedDBAvailable()) return
+        if (!isStorageAvailable()) return
         try {
             const metadata = await getAllSessionMetadata()
             setSessions(metadata)
@@ -86,7 +88,7 @@ export function useSessionManager(
         async function init() {
             setIsLoading(true)
 
-            if (!isIndexedDBAvailable()) {
+            if (!isStorageAvailable()) {
                 setIsAvailable(false)
                 setIsLoading(false)
                 return
@@ -95,9 +97,6 @@ export function useSessionManager(
             setIsAvailable(true)
 
             try {
-                // Run migration first (one-time conversion from localStorage)
-                await migrateFromLocalStorage()
-
                 // Load sessions list
                 const metadata = await getAllSessionMetadata()
                 setSessions(metadata)
@@ -113,7 +112,12 @@ export function useSessionManager(
                 }
                 // If no initialSessionId, start with blank state (no auto-restore)
             } catch (error) {
-                console.error("Failed to initialize session manager:", error)
+                setIsAvailable(false)
+                toast.error(
+                    error instanceof Error
+                        ? error.message
+                        : "Could not load Nimi history.",
+                )
             } finally {
                 setIsLoading(false)
             }
@@ -179,11 +183,15 @@ export function useSessionManager(
 
             // Save current session first if it has messages
             if (currentSession && currentSession.messages.length > 0) {
+                sessionSignal.throwIfAborted()
                 await saveSession(currentSession)
+                sessionSignal.throwIfAborted()
             }
 
             // Load the target session
+            sessionSignal.throwIfAborted()
             const session = await getSession(id)
+            sessionSignal.throwIfAborted()
             if (!session) {
                 console.error("Session not found:", id)
                 return null
@@ -208,7 +216,9 @@ export function useSessionManager(
     const deleteSession = useCallback(
         async (id: string): Promise<{ wasCurrentSession: boolean }> => {
             const wasCurrentSession = id === currentSessionId
+            sessionSignal.throwIfAborted()
             await deleteSessionFromDB(id)
+            sessionSignal.throwIfAborted()
 
             // If deleting current session, clear state (caller will show new empty session)
             if (wasCurrentSession) {
@@ -230,6 +240,7 @@ export function useSessionManager(
             data: SessionData,
             forSessionId?: string | null,
         ): Promise<void> => {
+            sessionSignal.throwIfAborted()
             // If forSessionId is provided, verify it matches current session
             // This prevents stale debounced saves from overwriting a newly switched session
             if (
@@ -251,7 +262,9 @@ export function useSessionManager(
                     title: extractTitle(data.messages),
                 }
                 await saveSession(newSession)
+                sessionSignal.throwIfAborted()
                 await enforceSessionLimit()
+                sessionSignal.throwIfAborted()
                 setCurrentSession(newSession)
                 setCurrentSessionId(newSession.id)
                 await refreshSessions()
@@ -277,7 +290,9 @@ export function useSessionManager(
                         : currentSession.title,
             }
 
+            sessionSignal.throwIfAborted()
             await saveSession(updatedSession)
+            sessionSignal.throwIfAborted()
             setCurrentSession(updatedSession)
 
             // Update sessions list metadata

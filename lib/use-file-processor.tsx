@@ -52,6 +52,11 @@ export function useFileProcessor() {
                         text = await extractTextFileContent(file)
                     }
 
+                    if (!text.trim())
+                        throw new Error(
+                            "No readable text was found. For scanned PDFs, upload a page image or use a PDF with selectable text.",
+                        )
+
                     // Check character limit
                     if (text.length > MAX_EXTRACTED_CHARS) {
                         const limitK = MAX_EXTRACTED_CHARS / 1000
@@ -79,7 +84,10 @@ export function useFileProcessor() {
                     })
                 } catch (error) {
                     console.error("Failed to extract text:", error)
-                    toast.error(`Failed to read file: ${file.name}`)
+                    toast.error(
+                        `${file.name}: ${error instanceof Error ? error.message : "Failed to read file"}`,
+                    )
+                    setFiles((prev) => prev.filter((entry) => entry !== file))
                     setPdfData((prev) => {
                         const next = new Map(prev)
                         next.delete(file)

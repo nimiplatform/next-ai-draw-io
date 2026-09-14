@@ -1,20 +1,15 @@
 import {
     app,
     BrowserWindow,
-    dialog,
     Menu,
     type MenuItemConstructorOptions,
     shell,
 } from "electron"
-import {
-    applyPresetToEnv,
-    getAllPresets,
-    getCurrentPresetId,
-    setCurrentPreset,
-} from "./config-manager"
 import { getMenuTranslations, getPreferredLocale } from "./menu-i18n"
-import { restartNextServer } from "./next-server"
-import { showSettingsWindow } from "./settings-window"
+
+function showSettingsWindow(window?: BrowserWindow) {
+    window?.webContents.send("drawio:open-settings")
+}
 
 /**
  * Build and set the application menu with i18n support
@@ -134,9 +129,6 @@ function getMenuTemplate(): MenuItemConstructorOptions[] {
         ],
     })
 
-    // Configuration menu with presets
-    template.push(buildConfigMenu(t))
-
     // Window menu
     template.push({
         label: t.window,
@@ -168,7 +160,7 @@ function getMenuTemplate(): MenuItemConstructorOptions[] {
                 label: t.reportIssue,
                 click: async () => {
                     await shell.openExternal(
-                        "https://github.com/dayuanjiang/next-ai-draw-io/issues",
+                        "https://github.com/nimiplatform/next-ai-draw-io/issues",
                     )
                 },
             },
@@ -176,73 +168,4 @@ function getMenuTemplate(): MenuItemConstructorOptions[] {
     })
 
     return template
-}
-
-/**
- * Build the Configuration menu with presets
- */
-function buildConfigMenu(
-    t: ReturnType<typeof getMenuTranslations>,
-): MenuItemConstructorOptions {
-    const presets = getAllPresets()
-    const currentPresetId = getCurrentPresetId()
-
-    const presetItems: MenuItemConstructorOptions[] = presets.map((preset) => ({
-        label: preset.name,
-        type: "radio",
-        checked: preset.id === currentPresetId,
-        click: async () => {
-            const previousPresetId = getCurrentPresetId()
-            const env = applyPresetToEnv(preset.id)
-
-            if (env) {
-                try {
-                    await restartNextServer()
-                    rebuildAppMenu() // Rebuild menu to update checkmarks
-                } catch (error) {
-                    console.error("Failed to restart server:", error)
-
-                    // Revert to previous preset on failure
-                    if (previousPresetId) {
-                        applyPresetToEnv(previousPresetId)
-                    } else {
-                        setCurrentPreset(null)
-                    }
-
-                    // Rebuild menu to restore previous checkmark state
-                    rebuildAppMenu()
-
-                    // Show error dialog to notify user
-                    dialog.showErrorBox(
-                        "Configuration Error",
-                        `Failed to apply preset "${preset.name}". The server could not be restarted.\n\nThe previous configuration has been restored.\n\nError: ${error instanceof Error ? error.message : String(error)}`,
-                    )
-                }
-            }
-        },
-    }))
-
-    return {
-        label: t.configuration,
-        submenu: [
-            ...(presetItems.length > 0
-                ? [
-                      { label: t.switchPreset, enabled: false },
-                      { type: "separator" } as MenuItemConstructorOptions,
-                      ...presetItems,
-                      { type: "separator" } as MenuItemConstructorOptions,
-                  ]
-                : []),
-            {
-                label:
-                    presetItems.length > 0
-                        ? t.managePresets
-                        : t.addConfigurationPreset,
-                click: () => {
-                    const win = BrowserWindow.getFocusedWindow()
-                    showSettingsWindow(win || undefined)
-                },
-            },
-        ],
-    }
 }

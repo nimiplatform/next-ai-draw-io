@@ -133,7 +133,7 @@
         "customSystemMessageDescription": "Add custom instructions appended to the AI's system prompt.",
         "customSystemMessagePlaceholder": "e.g., Always use blue color scheme for diagrams...",
         "maxOutputTokens": "Max Output Tokens",
-        "maxOutputTokensDescription": "Budget for one reply, shared by thinking and the diagram XML. Raise it if the AI keeps thinking and no diagram appears. Leave empty for the default.",
+        "maxOutputTokensDescription": "Leave empty to use the Nimi configuration. An explicit token budget is sent unchanged; if the selected configuration does not support it, Nimi will report an error.",
         "panelVisibility": "Lobby Panels",
         "panelVisibilityDescription": "Choose which panels to show on the chat lobby.",
         "showRecentChats": "Recent Chats",
@@ -553,5 +553,13 @@
                 "description": "Timezone for the daily reset boundary."
             }
         }
+    },
+    "nimi": {
+        "models": "Nimi AI models",
+        "modelsDescription": "Choose the model Nimi uses to generate and edit your diagrams.",
+        "connectTitle": "Next AI Draw.io",
+        "connectDescription": "Open this app from Nimi Desktop and enable its AI and storage access to continue.",
+        "storageNotice": "Your diagrams remain in Nimi managed storage. This window reconnects automatically when access is ready.",
+        "connectionDetails": "Connection details"
     }
 }

@@ -1,5 +1,9 @@
 import path from "node:path"
-import { app, BrowserWindow, screen } from "electron"
+import { fileURLToPath } from "node:url"
+import { isAllowedElectronRendererUrl } from "@nimiplatform/kit/shell/electron/main"
+import { app, BrowserWindow, screen, shell } from "electron"
+
+const currentDir = path.dirname(fileURLToPath(import.meta.url))
 
 let mainWindow: BrowserWindow | null = null
 
@@ -21,13 +25,16 @@ function getIconPath(): string | undefined {
     }
 
     // Development: use icon.png from resources
-    return path.join(__dirname, "../../resources/icon.png")
+    return path.join(currentDir, "../resources/icon.png")
 }
 
 /**
  * Create the main application window
  */
-export function createWindow(serverUrl: string): BrowserWindow {
+export function createWindow(
+    serverUrl: string,
+    allowedRendererUrls: string[],
+): BrowserWindow {
     const { width, height } = screen.getPrimaryDisplay().workAreaSize
 
     mainWindow = new BrowserWindow({
@@ -39,12 +46,26 @@ export function createWindow(serverUrl: string): BrowserWindow {
         icon: getIconPath(),
         show: false, // Don't show until ready
         webPreferences: {
-            preload: path.join(__dirname, "../preload/index.js"),
+            preload: path.join(currentDir, "preload.cjs"),
             contextIsolation: true,
             nodeIntegration: false,
             sandbox: true,
             webSecurity: true,
         },
+    })
+
+    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+        if (/^https?:\/\//.test(url) && new URL(url).origin !== serverUrl)
+            void shell.openExternal(url)
+        return { action: "deny" }
+    })
+    mainWindow.webContents.on("will-navigate", (event, url) => {
+        const target = new URL(url)
+        const isAbout =
+            target.origin === serverUrl &&
+            /^\/(en|zh|ja|zh-Hant)\/about(?:\/|$)/.test(target.pathname)
+        if (!isAbout && !isAllowedElectronRendererUrl(url, allowedRendererUrls))
+            event.preventDefault()
     })
 
     // Load the Next.js application
@@ -54,11 +75,6 @@ export function createWindow(serverUrl: string): BrowserWindow {
     mainWindow.once("ready-to-show", () => {
         mainWindow?.show()
     })
-
-    // Open DevTools in development
-    if (process.env.NODE_ENV === "development") {
-        mainWindow.webContents.openDevTools()
-    }
 
     // Override the draw.io iframe's beforeunload handler so the window can
     // close after the user edits text in a shape (fixes #815). Diagrams are

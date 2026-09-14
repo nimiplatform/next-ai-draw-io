@@ -7,6 +7,7 @@ import type {
 } from "@/components/chat/ValidationCard"
 import type { ValidationResult } from "@/lib/diagram-validator"
 import { formatValidationFeedback } from "@/lib/diagram-validator"
+import { currentNimiSessionSignal } from "@/lib/nimi/client"
 import { isMxCellXmlComplete, wrapWithMxFile } from "@/lib/utils"
 
 const DEBUG = process.env.NODE_ENV === "development"
@@ -46,6 +47,7 @@ type ValidateDiagramFn = (
 ) => Promise<ValidationResult>
 
 interface UseDiagramToolHandlersParams {
+    operationSignal: AbortSignal
     partialXmlRef: MutableRefObject<string>
     editDiagramOriginalXmlRef: MutableRefObject<Map<string, string>>
     chartXMLRef: MutableRefObject<string>
@@ -70,18 +72,38 @@ interface UseDiagramToolHandlersParams {
  * it comes from useChat which creates a circular dependency.
  */
 export function useDiagramToolHandlers({
+    operationSignal,
     partialXmlRef,
     editDiagramOriginalXmlRef,
     chartXMLRef,
-    onDisplayChart,
-    onFetchChart,
-    onExport,
+    onDisplayChart: displayChart,
+    onFetchChart: fetchChart,
+    onExport: exportChart,
     captureValidationPng,
     validateDiagram,
     enableVlmValidation = true,
     sessionId,
     onValidationStateChange,
 }: UseDiagramToolHandlersParams) {
+    const sessionSignal = AbortSignal.any([
+        currentNimiSessionSignal(),
+        operationSignal,
+    ])
+    const onDisplayChart = (...args: Parameters<typeof displayChart>) => {
+        sessionSignal.throwIfAborted()
+        return displayChart(...args)
+    }
+    const onFetchChart = async (...args: Parameters<typeof fetchChart>) => {
+        sessionSignal.throwIfAborted()
+        const result = await fetchChart(...args)
+        sessionSignal.throwIfAborted()
+        return result
+    }
+    const onExport = () => {
+        sessionSignal.throwIfAborted()
+        exportChart()
+    }
+
     // Track validation retry count per tool call
     const validationRetryCountRef = useRef<Map<string, number>>(new Map())
 
@@ -97,6 +119,7 @@ export function useDiagramToolHandlers({
             imageData?: string
         },
     ) => {
+        sessionSignal.throwIfAborted()
         if (onValidationStateChange) {
             onValidationStateChange(toolCallId, {
                 status,
@@ -106,8 +129,13 @@ export function useDiagramToolHandlers({
     }
     const handleToolCall = async (
         { toolCall }: { toolCall: ToolCall },
-        addToolOutput: AddToolOutputFn,
+        writeToolOutput: AddToolOutputFn,
     ) => {
+        sessionSignal.throwIfAborted()
+        const addToolOutput: AddToolOutputFn = (output) => {
+            sessionSignal.throwIfAborted()
+            writeToolOutput(output)
+        }
         if (DEBUG) {
             console.log(
                 `[onToolCall] Tool: ${toolCall.toolName}, CallId: ${toolCall.toolCallId}`,

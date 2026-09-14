@@ -28,6 +28,17 @@ export function isRealDiagram(xml: string | undefined | null): boolean {
     return !!xml && xml.length > MIN_REAL_DIAGRAM_LENGTH
 }
 
+/** Whether an uncompressed draw.io export contains a shape or connector. */
+export function hasDiagramCells(xml: string): boolean {
+    const document = new DOMParser().parseFromString(xml, "text/xml")
+    if (document.getElementsByTagName("parsererror").length) return false
+    return Array.from(document.getElementsByTagName("mxCell")).some(
+        (cell) =>
+            cell.getAttribute("vertex") === "1" ||
+            cell.getAttribute("edge") === "1",
+    )
+}
+
 // ============================================================================
 // XML Validation/Fix Constants
 // ============================================================================

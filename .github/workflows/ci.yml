@@ -2,11 +2,9 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [nimi]
   pull_request:
-    branches:
-      - main
+    branches: [nimi]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -16,27 +14,32 @@ permissions:
   contents: read
 
 jobs:
-  ci:
+  app:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.5
+      - uses: actions/setup-node@v6
         with:
           node-version: '24'
-          cache: 'npm'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run app:check
+      - run: pnpm run check
+      - run: pnpm exec tsc --noEmit
+      - run: pnpm run app:test
+      - run: pnpm run build
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Type check
-        run: npx tsc --noEmit
-
-      - name: Lint check
-        run: npm run check
-
-      - name: Build
-        run: npm run build
-
+  upstream-mcp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: packages/mcp-server/package-lock.json
+      - run: npm --prefix packages/mcp-server ci
+      - run: npm --prefix packages/mcp-server test
