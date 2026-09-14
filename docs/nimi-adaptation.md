@@ -1,6 +1,6 @@
 # Next AI Draw.io — Nimi adaptation
 
-This fork adapts [DayuanJiang/next-ai-draw-io](https://github.com/DayuanJiang/next-ai-draw-io), based on commit `027cd88c9088ad5b2d6deff4641dc47ded06afd2` (0.4.16). The original [Apache-2.0 license](../LICENSE), upstream identity and credits remain. The fork is [nimiplatform/next-ai-draw-io](https://github.com/nimiplatform/next-ai-draw-io). The immutable [v0.4.16 release](https://github.com/nimiplatform/next-ai-draw-io/releases/tag/v0.4.16) is published but was not admitted to the Registry. The current source version is 0.4.17, with the bounded release corrections described below; no Registry PR has been created.
+This fork adapts [DayuanJiang/next-ai-draw-io](https://github.com/DayuanJiang/next-ai-draw-io), based on commit `027cd88c9088ad5b2d6deff4641dc47ded06afd2` (0.4.16). The original [Apache-2.0 license](../LICENSE), upstream identity and credits remain. The fork is [nimiplatform/next-ai-draw-io](https://github.com/nimiplatform/next-ai-draw-io). The immutable [v0.4.16 release](https://github.com/nimiplatform/next-ai-draw-io/releases/tag/v0.4.16) was not admitted to the Registry. The corrected [v0.4.17 release](https://github.com/nimiplatform/next-ai-draw-io/releases/tag/v0.4.17) is published from `f6e331e008a712b92140356e688ae548109dac9e`; [Registry submission #54](https://github.com/nimiplatform/nimi-app-registry/pull/54) is awaiting admission.
 
 ## Current delivery status
 
@@ -31,7 +31,7 @@ The repository installs the fixed **public dependency matrix** below with a froz
 | Public-dependency supervised launch/drawing/save regression | PASS; real PUBLIC INPUT → NIMI MODEL → SAVED drawing survives reopening and reload |
 | Production installation and running | NOT-VERIFIED; current machine retains the source Runtime environment |
 
-The [0.4.16 formal release workflow](https://github.com/nimiplatform/next-ai-draw-io/actions/runs/34852623131) passed production build/pack and provenance jobs on Windows x86_64 and macOS arm64. Windows user journeys remain **NOT-VERIFIED**. The 0.4.17 target builds and released-package validation require the next manager-owned workflow; the bounded source checks below do not establish those results. Registry admission, Catalog installation, production running, clean-machine installation and version-update acceptance have not been performed.
+The [0.4.17 formal release workflow](https://github.com/nimiplatform/next-ai-draw-io/actions/runs/34856998029) passed production build/pack and provenance jobs on Windows x86_64 and macOS arm64, followed by immutable Release and asset verification. Its first Windows attempt encountered an upstream GitHub 504 while downloading Electron checksums; the failed jobs succeeded on retry with the same tag and source. Windows user journeys remain **NOT-VERIFIED**. Registry admission, Catalog installation, production running, clean-machine installation and version-update acceptance have not been performed.
 
 ## 0.4.17 release corrections
 
@@ -43,7 +43,16 @@ The checkout regression uses separate temporary clones and per-command Git confi
 
 The same version review found that Electron Packager 20.3 writes its `appVersion` into the packaged `package.json`. The existing Windows resource version has four numeric components, which would also produce an internal `0.4.17.0` manifest. The App now uses the public App Tools template's `beforeAsar` hook to restore the original App SemVer. A bounded test ran the real Packager `writeAppVersion` and ASAR stages with Windows options: without the hook the archive contained `0.4.17.0`; with the App's actual hook it contained `0.4.17`, while both numeric resource options remained `0.4.17.0`. This does not claim a full Windows build or running result.
 
-No AI or business behavior changed, so the existing real functional evidence is retained. The new 0.4.17 release, Registry artifact validation and installed-App acceptance remain **NOT-VERIFIED** until their owner performs those separate steps.
+No AI or business behavior changed, so the existing real functional evidence is retained. The published 0.4.17 App information reports the same 10,761-byte license with the reviewed SHA-256 on both targets. Registry preparation downloaded both actual packages and passed its full archive, license and build-provenance validation. Human admission and installed-App acceptance remain separate unverified steps.
+
+## Published 0.4.17 artifacts
+
+The [immutable Release](https://github.com/nimiplatform/next-ai-draw-io/releases/tag/v0.4.17) contains the macOS arm64 package (633,146,864 bytes), Windows x86_64 package (678,259,417 bytes), their App information, and one aggregate candidate. These CI artifacts are the source for Registry submission. The earlier local 0.4.16 artifact below is retained only as historical build evidence.
+
+- macOS package SHA-256: `85c89e1e6427e126c6cdb955bf2f3a9929af9123657e8ce9b7f5f25480f5394b`.
+- Windows package SHA-256: `d6c86010fefeb57883cffef546c812db81ba2235313856392853b6de57a032cd`.
+- Both targets have unsigned publisher posture; no macOS Developer ID/notarization is claimed.
+- The two reusable workflow corrections were published as App Tools 0.6.1 (formatter-stable sync) and 0.6.2 (license checkout template/guide). This App's release remains pinned to 0.6.1 with its own committed Git attribute rule.
 
 ## 0.4.16 runtime acceptance
 
