@@ -49,8 +49,8 @@ importers:
         specifier: ^16.0.6
         version: 16.1.6(next@16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)
       '@nimiplatform/app-tools':
-        specifier: ^0.6.0
-        version: 0.6.0(vite@7.3.6(@types/node@24.13.3)(jiti@2.6.1)(lightningcss@1.33.0)(terser@5.16.9)(yaml@2.9.1))
+        specifier: ^0.6.1
+        version: 0.6.1(vite@7.3.6(@types/node@24.13.3)(jiti@2.6.1)(lightningcss@1.33.0)(terser@5.16.9)(yaml@2.9.1))
       '@nimiplatform/nimi-coding':
         specifier: 0.6.3
         version: 0.6.3
@@ -2031,8 +2031,8 @@ packages:
       next: ^13.0.0 || ^14.0.0 || ^15.0.0 || ^16.0.0-beta.0
       react: ^18.2.0 || 19.0.0-rc-de68d2f4-20241204 || ^19.0.0
 
-  '@nimiplatform/app-tools@0.6.0':
-    resolution: {integrity: sha512-Jiu1F4e8AB/S4B9Y0aZUxAhTFE1mER9J34s2UxY8WhDx9XfQDQma0iPkoM9dWYs8qNHaUG9VBCw9DE1Z3pioAg==}
+  '@nimiplatform/app-tools@0.6.1':
+    resolution: {integrity: sha512-diXIaLLGezLnFuKod2z35T7iAuv8v1bdra+D7o57go5yc3M+gOhGR+m37ZsE4WN+bgi+BP01AqEsGb25XVPmnw==}
     engines: {node: '>=24.0.0'}
     hasBin: true
     peerDependencies:
@@ -8343,7 +8343,7 @@ snapshots:
       react: 19.2.8
       third-party-capital: 1.0.20
 
-  '@nimiplatform/app-tools@0.6.0(vite@7.3.6(@types/node@24.13.3)(jiti@2.6.1)(lightningcss@1.33.0)(terser@5.16.9)(yaml@2.9.1))':
+  '@nimiplatform/app-tools@0.6.1(vite@7.3.6(@types/node@24.13.3)(jiti@2.6.1)(lightningcss@1.33.0)(terser@5.16.9)(yaml@2.9.1))':
     dependencies:
       pngjs: 7.0.0
       postcss: 8.5.28

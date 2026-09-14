@@ -85,10 +85,12 @@ Current public matrix (no automatic `latest` upgrade):
 | `@nimiplatform/kit` | 0.9.0 |
 | Kit protected-local native, macOS arm64 / Windows x86_64 | 0.9.0 |
 | `@nimiplatform/sdk-adapter-vercel-ai` | 0.1.0 |
-| `@nimiplatform/app-tools` | 0.6.0 |
+| `@nimiplatform/app-tools` | 0.6.1 |
 | `@nimiplatform/nimi-coding` | 0.6.3, retained |
 
-The new components were released from Nimi commit [`889ee926d572ddbaf2550fd693f6292fd8889c40`](https://github.com/nimiplatform/nimi/commit/889ee926d572ddbaf2550fd693f6292fd8889c40), through [PR #146](https://github.com/nimiplatform/nimi/pull/146). The App Tools public tarball SHA-1 is `0acf5c0d7bbb8883f42cd376f36a6768dcb96c97`, matching the publisher's CI artifact. The lock records each public package's SHA-512 integrity, including the Windows native package that is not executed on this Mac. Rust shell 0.5.0 is part of the matching platform cohort; this Electron App does not add a direct Rust shell dependency.
+SDK, Kit/native, adapter and the initial App Tools 0.6.0 were released from Nimi commit [`889ee926d572ddbaf2550fd693f6292fd8889c40`](https://github.com/nimiplatform/nimi/commit/889ee926d572ddbaf2550fd693f6292fd8889c40), through [PR #146](https://github.com/nimiplatform/nimi/pull/146). App Tools 0.6.1 comes from [`625112565e8ed658a37c3355177b803ace72a1ba`](https://github.com/nimiplatform/nimi/commit/625112565e8ed658a37c3355177b803ace72a1ba), through [PR #147](https://github.com/nimiplatform/nimi/pull/147), and its public tarball SHA-1 is `9ab4a340ec7634b43531659f2c7d8a15250909b9`. The lock records each public package's SHA-512 integrity, including the Windows native package that is not executed on this Mac. Rust shell 0.5.0 is part of the matching platform cohort; this Electron App does not add a direct Rust shell dependency.
+
+The first release-workflow rehearsal exposed formatting drift after commit: App Tools 0.6.0 rewrote `package.json` with two spaces while the App's Biome hook used four. App Tools 0.6.1 preserves the original text when managed values are unchanged and still repairs actual managed-field changes. This public patch is used without changing the App's formatter or bypassing the workflow's clean-tree check. The release matrix is being revalidated; previous business-journey evidence is unchanged.
 
 Historical development candidates and their verification scope:
 
