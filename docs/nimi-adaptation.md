@@ -1,12 +1,12 @@
 # Next AI Draw.io — Nimi adaptation
 
-This fork adapts [DayuanJiang/next-ai-draw-io](https://github.com/DayuanJiang/next-ai-draw-io), based on commit `027cd88c9088ad5b2d6deff4641dc47ded06afd2` (0.4.16). The original [Apache-2.0 license](../LICENSE), upstream identity and credits remain. The fork is [nimiplatform/next-ai-draw-io](https://github.com/nimiplatform/next-ai-draw-io). No App release or Registry submission has been performed.
+This fork adapts [DayuanJiang/next-ai-draw-io](https://github.com/DayuanJiang/next-ai-draw-io), based on commit `027cd88c9088ad5b2d6deff4641dc47ded06afd2` (0.4.16). The original [Apache-2.0 license](../LICENSE), upstream identity and credits remain. The fork is [nimiplatform/next-ai-draw-io](https://github.com/nimiplatform/next-ai-draw-io). The immutable [v0.4.16 release](https://github.com/nimiplatform/next-ai-draw-io/releases/tag/v0.4.16) is published but was not admitted to the Registry. The current source version is 0.4.17, with the bounded release corrections described below; no Registry PR has been created.
 
 ## Current delivery status
 
-The repository installs the fixed **public dependency matrix** below with a frozen pnpm lock. All temporary Nimi overrides have been removed, and package integrity values match public npm. `nimi-app check --production`, 78 tests, TypeScript and Biome checks pass. Mac production build/pack and the public-dependency supervised launch, actual drawing, save/reopen and reload regression also pass. The complete functional journeys were exercised in the actual Desktop-supervised App with matching development candidates; their sufficient evidence was reused for unchanged paths.
+The repository installs the fixed **public dependency matrix** below with a frozen pnpm lock. All temporary Nimi overrides have been removed, and package integrity values match public npm. The 0.4.16 adaptation passed `nimi-app check --production`, 78 tests, TypeScript and Biome checks, Mac production build/pack, and the public-dependency supervised launch/drawing/save/reload regression. Its formal release workflow subsequently passed both platform builds and provenance jobs. The complete functional journeys were exercised in the actual Desktop-supervised App with matching development candidates; this evidence is reused for the unchanged business code in 0.4.17.
 
-| macOS arm64 journey | Observed result |
+| 0.4.16 macOS arm64 journey | Observed result |
 | --- | --- |
 | Framework, type checking and Electron compilation | PASS; Next.js retained; 78 tests in 9 files pass |
 | Public-matrix production build/package | PASS; public production native included, `production-unsigned` posture |
@@ -31,7 +31,21 @@ The repository installs the fixed **public dependency matrix** below with a froz
 | Public-dependency supervised launch/drawing/save regression | PASS; real PUBLIC INPUT → NIMI MODEL → SAVED drawing survives reopening and reload |
 | Production installation and running | NOT-VERIFIED; current machine retains the source Runtime environment |
 
-Windows x86_64 has an explicit build target and native-host guard. This Mac cannot establish Windows build or running acceptance: both are **NOT-VERIFIED**. Catalog admission, clean-machine installation and version-update acceptance have not been performed. A local development launch is not Catalog or installed-App evidence.
+The [0.4.16 formal release workflow](https://github.com/nimiplatform/next-ai-draw-io/actions/runs/34852623131) passed production build/pack and provenance jobs on Windows x86_64 and macOS arm64. Windows user journeys remain **NOT-VERIFIED**. The 0.4.17 target builds and released-package validation require the next manager-owned workflow; the bounded source checks below do not establish those results. Registry admission, Catalog installation, production running, clean-machine installation and version-update acceptance have not been performed.
+
+## 0.4.17 release corrections
+
+Registry preparation downloaded the immutable 0.4.16 artifacts and rejected the Windows LICENSE because its bytes differed from the tag's Git blob. The Mac license was 10,761 bytes with no CRLF pairs; the Windows license was 10,951 bytes with 190 CRLF pairs. Removing only the Windows CR characters made the contents identical. A fresh isolated checkout of `4f31d1057972b7e808af51cc307acc7611b8cd9c` with per-command `git -c core.autocrlf=true` reproduced that exact conversion. Passing the release workflow did not establish Registry admission.
+
+The App-owned fix is the single `.gitattributes` rule `LICENSE -text`. It prevents Git checkout conversion of the original license bytes; LICENSE itself is unchanged. The package and submitted manifest advance to 0.4.17, and installed public App Tools 0.6.1 synchronizes the related identity/submission inputs. The dependency matrix remains unchanged. The old tag and Release must remain immutable; manager owns the new tag, formal release and Registry continuation.
+
+The checkout regression uses separate temporary clones and per-command Git configuration, comparing each checked-out LICENSE directly to that commit's Git blob. It changes no persistent Git setting. The canonical license remains 10,761 bytes with SHA-256 `edcc537d7b303d03624347d5047c36772bcc1828e1ae0208096cc94cc58de95e`. Local contrast and fixed-commit results are kept under `.nimi/local/license-release/`; this checks checkout bytes, not a newly published Windows package.
+
+The same version review found that Electron Packager 20.3 writes its `appVersion` into the packaged `package.json`. The existing Windows resource version has four numeric components, which would also produce an internal `0.4.17.0` manifest. The App now uses the public App Tools template's `beforeAsar` hook to restore the original App SemVer. A bounded test ran the real Packager `writeAppVersion` and ASAR stages with Windows options: without the hook the archive contained `0.4.17.0`; with the App's actual hook it contained `0.4.17`, while both numeric resource options remained `0.4.17.0`. This does not claim a full Windows build or running result.
+
+No AI or business behavior changed, so the existing real functional evidence is retained. The new 0.4.17 release, Registry artifact validation and installed-App acceptance remain **NOT-VERIFIED** until their owner performs those separate steps.
+
+## 0.4.16 runtime acceptance
 
 The official source-development launch uses the matching native carrier supplied by Desktop for its supervised `defaultApp` process. The App sets no carrier override or shared Runtime configuration. Production packaging instead embeds the public production native package in its fixed Resources location; that artifact cannot use the development branch as production-running evidence. The user chose to retain the current source environment, so production installation is explicitly outside the verified result on this machine.
 
@@ -90,7 +104,7 @@ Current public matrix (no automatic `latest` upgrade):
 
 SDK, Kit/native, adapter and the initial App Tools 0.6.0 were released from Nimi commit [`889ee926d572ddbaf2550fd693f6292fd8889c40`](https://github.com/nimiplatform/nimi/commit/889ee926d572ddbaf2550fd693f6292fd8889c40), through [PR #146](https://github.com/nimiplatform/nimi/pull/146). App Tools 0.6.1 comes from [`625112565e8ed658a37c3355177b803ace72a1ba`](https://github.com/nimiplatform/nimi/commit/625112565e8ed658a37c3355177b803ace72a1ba), through [PR #147](https://github.com/nimiplatform/nimi/pull/147), and its public tarball SHA-1 is `9ab4a340ec7634b43531659f2c7d8a15250909b9`. The lock records each public package's SHA-512 integrity, including the Windows native package that is not executed on this Mac. Rust shell 0.5.0 is part of the matching platform cohort; this Electron App does not add a direct Rust shell dependency.
 
-The first release-workflow rehearsal exposed formatting drift after commit: App Tools 0.6.0 rewrote `package.json` with two spaces while the App's Biome hook used four. App Tools 0.6.1 preserves the original text when managed values are unchanged and still repairs actual managed-field changes. This public patch is used without changing the App's formatter or bypassing the workflow's clean-tree check. The release matrix is being revalidated; previous business-journey evidence is unchanged.
+The first release-workflow rehearsal exposed formatting drift after commit: App Tools 0.6.0 rewrote `package.json` with two spaces while the App's Biome hook used four. App Tools 0.6.1 preserves the original text when managed values are unchanged and still repairs actual managed-field changes. This public patch was verified by the successful 0.4.16 release workflow without changing the App's formatter or bypassing the clean-tree check. Previous business-journey evidence is unchanged.
 
 Historical development candidates and their verification scope:
 
@@ -130,7 +144,7 @@ NIMI_APP_CDP_ENDPOINT=http://127.0.0.1:THE_REPORTED_PORT pnpm run test:e2e
 
 The live driver uses actual AI and exported XML/SVG, with no mock SSE or injected access. `--from=history`, `--from=text` or `--from=image` continues a bounded subset; earlier steps are explicitly recorded NOT-RUN. Distinct run directories preserve failures as well as successes. Native save dialogs, PDF, visual validation, cancellation/reconnect and installation have separate checks. Compilation of the driver is not a passed journey.
 
-The formal public check/build/package commands used for this artifact are:
+The formal public check/build/package commands used for the earlier local 0.4.16 artifact are:
 
 ```sh
 pnpm exec nimi-app check --production
@@ -141,7 +155,9 @@ pnpm exec nimi-app pack --target macos-aarch64 --production
 
 All four pass. Biome exits successfully with 33 nonblocking warnings retained in existing App/MCP code. No App GitHub Release or Registry mutation is part of these local commands.
 
-## Current Mac artifact
+## Historical local 0.4.16 Mac artifact
+
+This is the earlier local artifact, not the immutable GitHub release artifact or a 0.4.17 build.
 
 - App: `io.github.nimiplatform.next-ai-draw-io`, version `0.4.16`.
 - Package: `dist/nimi-app/io.github.nimiplatform.next-ai-draw-io-0.4.16-macos-aarch64.nimiapp`.

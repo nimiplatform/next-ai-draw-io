@@ -1,6 +1,6 @@
 app_id: io.github.nimiplatform.next-ai-draw-io
 display_name: Next AI Draw.io
-version: 0.4.16
+version: 0.4.17
 profile: standalone
 manifest_role: submitted-input
 app_access:

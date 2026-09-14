@@ -179,6 +179,20 @@ try {
         prune: false,
         derefSymlinks: true,
         asar: { unpack: "**/*.node" },
+        // Preserve App SemVer after Packager writes the Windows resource version.
+        beforeAsar: [
+            async ({ buildPath }) => {
+                const manifestPath = path.join(buildPath, "package.json")
+                const manifest = JSON.parse(
+                    await readFile(manifestPath, "utf8"),
+                )
+                manifest.version = appManifest.version
+                await writeFile(
+                    manifestPath,
+                    `${JSON.stringify(manifest, null, 2)}\n`,
+                )
+            },
+        ],
         extraResource,
         ...(mac
             ? {
