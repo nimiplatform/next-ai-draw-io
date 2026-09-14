@@ -1,10 +1,10 @@
 # Next AI Draw.io — Nimi adaptation
 
-This fork adapts [DayuanJiang/next-ai-draw-io](https://github.com/DayuanJiang/next-ai-draw-io), based on commit `027cd88c9088ad5b2d6deff4641dc47ded06afd2` (0.4.16). The original [Apache-2.0 license](../LICENSE), upstream identity and credits remain. The fork is [nimiplatform/next-ai-draw-io](https://github.com/nimiplatform/next-ai-draw-io). The immutable [v0.4.16 release](https://github.com/nimiplatform/next-ai-draw-io/releases/tag/v0.4.16) was not admitted to the Registry. The corrected [v0.4.17 release](https://github.com/nimiplatform/next-ai-draw-io/releases/tag/v0.4.17) is published from `f6e331e008a712b92140356e688ae548109dac9e`; [Registry submission #54](https://github.com/nimiplatform/nimi-app-registry/pull/54) was approved and merged as `96a9615`. The current source version is 0.4.18.
+This fork adapts [DayuanJiang/next-ai-draw-io](https://github.com/DayuanJiang/next-ai-draw-io), based on commit `027cd88c9088ad5b2d6deff4641dc47ded06afd2` (0.4.16). The original [Apache-2.0 license](../LICENSE), upstream identity and credits remain. The fork is [nimiplatform/next-ai-draw-io](https://github.com/nimiplatform/next-ai-draw-io). The immutable [v0.4.16 release](https://github.com/nimiplatform/next-ai-draw-io/releases/tag/v0.4.16) was not admitted to the Registry. The corrected [v0.4.17 release](https://github.com/nimiplatform/next-ai-draw-io/releases/tag/v0.4.17) is published from `f6e331e008a712b92140356e688ae548109dac9e`; [Registry submission #54](https://github.com/nimiplatform/nimi-app-registry/pull/54) was approved and merged as `96a9615`. The current version, [v0.4.18](https://github.com/nimiplatform/next-ai-draw-io/releases/tag/v0.4.18), is publicly released and immutable; its [Registry update #55](https://github.com/nimiplatform/nimi-app-registry/pull/55) was approved and merged as `fcb78658b3edb26da92e8aa23ffca10606b92cc3`.
 
 ## Current delivery status
 
-The repository installs the fixed **public dependency matrix** below with a frozen pnpm lock. All temporary Nimi overrides have been removed, and package integrity values match public npm. Version 0.4.17 passed Registry admission and actual macOS Catalog download, package verification and installation. Production startup then failed before creating a window because a required sharp shared library was inside ASAR. This observed packaging failure, rather than an untested installation, is the current production-running blocker. Windows user journeys remain **NOT-VERIFIED**.
+The repository installs the fixed **public dependency matrix** below with a frozen pnpm lock. All temporary Nimi overrides have been removed, and package integrity values match public npm. Version 0.4.17 passed Registry admission and actual macOS Catalog download, package verification and installation. Production startup then failed before creating a window because a required sharp shared library was inside ASAR. Version 0.4.18 publishes the verified local packaging repair; its installation and running remain **NOT-VERIFIED**, as do Windows user journeys.
 
 Version 0.4.18 expands the App-owned ASAR unpack rule from `**/*.node` to `**/*.{node,dylib,dll}`. Native addons and their shared libraries keep their physical relative paths; JavaScript and other content remain archived. The Nimi production carrier, fixed dependencies, LICENSE bytes and AI/business code are unchanged. The existing 0.4.17 installed bundle, Release and tag are not modified.
 
@@ -12,7 +12,7 @@ The actual ASAR-stage regression copied the public sharp 0.35.4 native packages 
 
 The 0.4.18 local macOS production build, public `check --production`, 78 tests and Biome checks pass using App Tools 0.6.1. The complete built App's `app.asar.unpacked` contains both the sharp addon and libvips dylib, and a fresh Node process loads that actual addon with libvips 8.18.6. Its internal manifest is 0.4.18 and its public Nimi native carrier remains 0.9.0. The built-payload inspection is recorded in `.nimi/local/sharp-asar/built-payload.json`.
 
-Full Windows 0.4.18 build/running and 0.4.18 installed-App startup remain **NOT-VERIFIED** here. Manager owns the next formal tag/Release, Registry update and production recheck. The complete functional journeys below were exercised in the actual Desktop-supervised App; their evidence is retained for the unchanged business code.
+The [0.4.18 formal release workflow](https://github.com/nimiplatform/next-ai-draw-io/actions/runs/34864828694) passed macOS arm64 and Windows x86_64 production build/pack and provenance checks from `c6ce269339a59807debcea3072262cffda5e7f96`. Registry preparation then downloaded both actual packages and passed license, content-digest and SLSA validation. [Registry update PR #55](https://github.com/nimiplatform/nimi-app-registry/pull/55) received this version's approval and merged at `2026-09-14T16:12:37Z`, admitting 0.4.18. Manager continues the separate environment/installed-App recheck. Version 0.4.18 installation/running and Windows interactions remain **NOT-VERIFIED**. The prior real functional evidence below is retained for the unchanged business code.
 
 | 0.4.16 macOS arm64 journey | Observed result |
 | --- | --- |
@@ -40,6 +40,19 @@ Full Windows 0.4.18 build/running and 0.4.18 installed-App startup remain **NOT-
 | Production installation and running | NOT-VERIFIED at the 0.4.16 development checkpoint; later 0.4.17 installation/startup results are recorded above |
 
 The [0.4.17 formal release workflow](https://github.com/nimiplatform/next-ai-draw-io/actions/runs/34856998029) passed production build/pack and provenance jobs on Windows x86_64 and macOS arm64, followed by immutable Release and asset verification. Its first Windows attempt encountered an upstream GitHub 504 while downloading Electron checksums; the failed jobs succeeded on retry with the same tag and source. Registry admission and macOS Catalog installation subsequently passed, while startup exposed the sharp packaging failure described above. Successful production running, Windows user journeys, clean-machine acceptance and version-update acceptance remain **NOT-VERIFIED**.
+
+## Published 0.4.18 artifacts and Registry admission
+
+The [immutable public Release](https://github.com/nimiplatform/next-ai-draw-io/releases/tag/v0.4.18) was published at `2026-09-14T15:58:14Z` from source commit `c6ce269339a59807debcea3072262cffda5e7f96`. It contains both target packages, their App information and the aggregate candidate. GitHub's reported package sizes and SHA-256 values match the manager's release verification:
+
+| Target | Package bytes | SHA-256 |
+| --- | --- | --- |
+| macOS arm64 | 633,164,526 | `99805313c738f2ec12c444f774f957521d4c5fe42387a767273f6109a04f71e4` |
+| Windows x86_64 | 678,258,751 | `b8a03e746413bd2ed5fbc740f642679ea92923e2b0cb4d7f19540fe5d339c308` |
+
+Registry preparation has verified the downloaded artifacts, licenses and build provenance. [PR #55](https://github.com/nimiplatform/nimi-app-registry/pull/55) was approved and merged as [`fcb78658b3edb26da92e8aa23ffca10606b92cc3`](https://github.com/nimiplatform/nimi-app-registry/commit/fcb78658b3edb26da92e8aa23ffca10606b92cc3). Release publication, publisher validation and Registry admission are complete; 0.4.18 installed-App acceptance remains pending. The 0.4.17 Catalog installation success and startup failure are retained as the recorded installed-version evidence.
+
+The reusable native-library unpack fix is also publicly available in App Tools **0.6.3**, from Nimi commit [`e350606e4afebe2f05fc4cbe0ecd5552677a75d1`](https://github.com/nimiplatform/nimi/commit/e350606e4afebe2f05fc4cbe0ecd5552677a75d1) via [PR #149](https://github.com/nimiplatform/nimi/pull/149). Its public tarball SHA-1 is `5c3b6ba3fd15a2c2d78bd299de3604b4ddb2075a`, matching CI. This App keeps its fixed **0.6.1** dependency and App-owned unpack rule; the template patch requires no dependency upgrade or new App tag here.
 
 ## 0.4.17 release corrections
 
