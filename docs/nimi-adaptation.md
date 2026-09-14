@@ -4,7 +4,7 @@ This fork adapts [DayuanJiang/next-ai-draw-io](https://github.com/DayuanJiang/ne
 
 ## Current delivery status
 
-The repository installs the fixed **public dependency matrix** below with a frozen pnpm lock. All temporary Nimi overrides have been removed, and package integrity values match public npm. Version 0.4.17 passed Registry admission and actual macOS Catalog download, package verification and installation, but startup failed before creating a window because a required sharp shared library was inside ASAR. Version 0.4.18 subsequently passed the actual Catalog package update and installed-window launch in the existing source Desktop/Runtime environment, confirming that the sharp startup fault is resolved. Ordinary production AI/storage use remains blocked by the unavailable system Runtime; Windows user journeys remain **NOT-VERIFIED**.
+The repository installs the fixed **public dependency matrix** below with a frozen pnpm lock. All temporary Nimi overrides have been removed, and package integrity values match public npm. Version 0.4.17 passed Registry admission and actual macOS Catalog download, package verification and installation, but startup failed before creating a window because a required sharp shared library was inside ASAR. Version 0.4.18 subsequently passed the actual Catalog package update and installed-window launch in the existing source Desktop/Runtime environment, confirming that the sharp startup fault is resolved. The owner closed this adaptation phase on 2026-09-15 after development acceptance, publication, Registry admission and the source-environment Catalog lifecycle checks. Ordinary production AI/storage and Windows user journeys remain **NOT-VERIFIED**, deferred to a separate acceptance phase covering multiple Apps.
 
 Version 0.4.18 expands the App-owned ASAR unpack rule from `**/*.node` to `**/*.{node,dylib,dll}`. Native addons and their shared libraries keep their physical relative paths; JavaScript and other content remain archived. The Nimi production carrier, fixed dependencies, LICENSE bytes and AI/business code are unchanged. The repair did not manually patch the installed 0.4.17 bundle or alter its Release/tag; the subsequent Catalog update used the normal managed lifecycle.
 
@@ -27,11 +27,11 @@ Source Desktop then normally stopped the Host and uninstalled this test installa
 | Catalog 0.4.17 → 0.4.18 package download, verification and update | PASS in the source Desktop/Runtime environment |
 | Desktop-owned installed Host and editor-window startup | PASS; sharp startup failure eliminated |
 | Stop and uninstall the test installation | PASS; release payload physically removed, Host/listener ended, local-development source and App-owned OS storage retained |
-| Ordinary production AI and managed-storage business tasks | NOT-VERIFIED; blocked by `runtime-service-unavailable` until the system Runtime is enabled |
+| Ordinary production AI and managed-storage business tasks | NOT-VERIFIED; deferred to the separate multi-App production acceptance phase |
 | Cross-version business-data retention | NOT-VERIFIED; package update success does not establish data retention |
 | Windows interactive running | NOT-VERIFIED |
 
-Manager has downloaded the matching platform candidate and verified its signing/notarization. System installation and service enablement await the user's separate confirmation; they have not been performed as part of this App documentation update. Further production results will be recorded only after the actual environment and business journeys are verified.
+Manager has downloaded the matching platform candidate and verified its signing/notarization. The owner chose to retain the source development environment and defer system installation, service enablement and production business verification to a separate multi-App acceptance phase. No system-installation approval is pending for this adaptation phase. Further production results will be recorded after those actual journeys are verified.
 
 | 0.4.16 macOS arm64 journey | Observed result |
 | --- | --- |
