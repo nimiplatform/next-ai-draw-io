@@ -178,7 +178,8 @@ try {
         overwrite: false,
         prune: false,
         derefSymlinks: true,
-        asar: { unpack: "**/*.node" },
+        // Native addons and their shared libraries must retain physical sibling paths.
+        asar: { unpack: "**/*.{node,dylib,dll}" },
         // Preserve App SemVer after Packager writes the Windows resource version.
         beforeAsar: [
             async ({ buildPath }) => {
