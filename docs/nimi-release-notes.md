@@ -1,3 +1,7 @@
+# Next AI Draw.io 0.4.19 — Nimi adaptation
+
+Adds the publisher declaration for audience, AI text and diagram exports, and external URL retrieval. Keeps SDK 0.13 / Kit 0.9, the Vercel AI adapter and existing diagram workflows. No launch gate or safety certification is introduced. Publication, Registry admission and installed acceptance remain separate steps.
+
 # Next AI Draw.io 0.4.18 — Nimi adaptation
 
 Based on upstream Next AI Draw.io 0.4.16 at `027cd88c9088ad5b2d6deff4641dc47ded06afd2`.

@@ -1,6 +1,6 @@
 app_id: io.github.nimiplatform.next-ai-draw-io
 display_name: Next AI Draw.io
-version: 0.4.18
+version: 0.4.19
 profile: standalone
 npm_package_name: next-ai-draw-io
 cargo_package_name: next-ai-draw-io-shell
@@ -22,6 +22,35 @@ storage_policy:
     - path_pattern: User-selected export destinations
       purpose: Drawing and template exports saved through system file dialogs
       expected_size_band: Up to 25 MB per drawing export
+safety_profile:
+  ai:
+    direct_interaction: true
+    interaction_notice: absent
+    outputs:
+      - export_visible_marking: absent
+        exposure: exportable
+        in_product_notice: absent
+        machine_readable_marking: absent
+        modality: text
+        publication_control: not-applicable
+      - export_visible_marking: absent
+        exposure: exportable
+        in_product_notice: absent
+        machine_readable_marking: absent
+        modality: image
+        publication_control: not-applicable
+    risk_features: []
+    subject_notice: not-applicable
+  content_descriptors: []
+  data_practices:
+    commercial_features: []
+    publisher_direct_external_network: true
+    sensitive_data_categories: []
+    telemetry: []
+    third_party_account: none
+    user_content_sharing: none
+  high_impact_decision_uses: []
+  intended_audience: general
 support_manifest:
   diagnostics_bundle_fields:
     - app_version

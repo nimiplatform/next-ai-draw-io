@@ -49,8 +49,8 @@ importers:
         specifier: ^16.0.6
         version: 16.1.6(next@16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)
       '@nimiplatform/app-tools':
-        specifier: ^0.6.1
-        version: 0.6.1(vite@7.3.6(@types/node@24.13.3)(jiti@2.6.1)(lightningcss@1.33.0)(terser@5.16.9)(yaml@2.9.1))
+        specifier: ^0.7.5
+        version: 0.7.5(vite@7.3.6(@types/node@24.13.3)(jiti@2.6.1)(lightningcss@1.33.0)(terser@5.16.9)(yaml@2.9.1))
       '@nimiplatform/nimi-coding':
         specifier: 0.6.3
         version: 0.6.3
@@ -2031,8 +2031,8 @@ packages:
       next: ^13.0.0 || ^14.0.0 || ^15.0.0 || ^16.0.0-beta.0
       react: ^18.2.0 || 19.0.0-rc-de68d2f4-20241204 || ^19.0.0
 
-  '@nimiplatform/app-tools@0.6.1':
-    resolution: {integrity: sha512-diXIaLLGezLnFuKod2z35T7iAuv8v1bdra+D7o57go5yc3M+gOhGR+m37ZsE4WN+bgi+BP01AqEsGb25XVPmnw==}
+  '@nimiplatform/app-tools@0.7.5':
+    resolution: {integrity: sha512-3borcODs7O4Ef+GAwUCafGykquE5IxyxvEYI9HffdLb3IXe1EQ5rnN1x45SCc8RLhhGYGC39BuZIiwNo/tW91w==}
     engines: {node: '>=24.0.0'}
     hasBin: true
     peerDependencies:
@@ -5565,10 +5565,6 @@ packages:
     resolution: {integrity: sha512-IQ7TZdoaqbT+LCpShg46jnZVlhWD2w6iQYAcYXfHARZ7X1t/UGhhceQDs5X0cGqKvYlHNOuv7Oa1xmb0oQuA3w==}
     engines: {node: '>=4'}
 
-  postcss-selector-parser@7.1.6:
-    resolution: {integrity: sha512-7qASPzhKF2l2KLboRZux8CCTRMdGiV08vWmyKzPz22qZ7ZjQBOeY7rNzNoCLSUiftJ7HUq0GERHmxw/t0dCdMw==}
-    engines: {node: '>=4'}
-
   postcss@8.4.31:
     resolution: {integrity: sha512-PS08Iboia9mts/2ygV3eLpY5ghnUcfLV/EXTOW1E2qYxJKGGBUtNjN76FYHnMs36RmARn41bC0AZmn+rR0OVpQ==}
     engines: {node: ^10 || ^12 || >=14}
@@ -8343,11 +8339,9 @@ snapshots:
       react: 19.2.8
       third-party-capital: 1.0.20
 
-  '@nimiplatform/app-tools@0.6.1(vite@7.3.6(@types/node@24.13.3)(jiti@2.6.1)(lightningcss@1.33.0)(terser@5.16.9)(yaml@2.9.1))':
+  '@nimiplatform/app-tools@0.7.5(vite@7.3.6(@types/node@24.13.3)(jiti@2.6.1)(lightningcss@1.33.0)(terser@5.16.9)(yaml@2.9.1))':
     dependencies:
       pngjs: 7.0.0
-      postcss: 8.5.28
-      postcss-selector-parser: 7.1.6
       semver: 7.8.5
       typescript: 5.9.3
       yaml: 2.9.1
@@ -12318,11 +12312,6 @@ snapshots:
   possible-typed-array-names@1.1.0: {}
 
   postcss-selector-parser@6.0.10:
-    dependencies:
-      cssesc: 3.0.0
-      util-deprecate: 1.0.2
-
-  postcss-selector-parser@7.1.6:
     dependencies:
       cssesc: 3.0.0
       util-deprecate: 1.0.2

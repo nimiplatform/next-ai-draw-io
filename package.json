@@ -1,6 +1,6 @@
 {
     "name": "next-ai-draw-io",
-    "version": "0.4.18",
+    "version": "0.4.19",
     "license": "Apache-2.0",
     "private": true,
     "main": "dist-electron/main.js",
@@ -42,8 +42,8 @@
         "build:electron:windows": "node scripts/package-nimi-electron.mjs --target=windows-x86_64"
     },
     "dependencies": {
-        "@nimiplatform/kit": "^0.9.0",
-        "@nimiplatform/sdk": "^0.13.0"
+        "@nimiplatform/sdk": "^0.13.0",
+        "@nimiplatform/kit": "^0.9.0"
     },
     "optionalDependencies": {
         "@tailwindcss/oxide-linux-x64-gnu": "^4.1.18",
@@ -67,8 +67,6 @@
         "@langfuse/otel": "^4.4.4",
         "@langfuse/tracing": "^4.4.9",
         "@next/third-parties": "^16.0.6",
-        "@nimiplatform/app-tools": "^0.6.1",
-        "@nimiplatform/nimi-coding": "0.6.3",
         "@nimiplatform/sdk-adapter-vercel-ai": "^0.1.0",
         "@opennextjs/cloudflare": "^1.17.1",
         "@opentelemetry/api": "^1.9.0",
@@ -140,7 +138,9 @@
         "vite-tsconfig-paths": "^6.0.3",
         "vitest": "^4.0.16",
         "wrangler": "^4.60.0",
-        "zod": "^4.1.12"
+        "zod": "^4.1.12",
+        "@nimiplatform/app-tools": "^0.7.5",
+        "@nimiplatform/nimi-coding": "0.6.3"
     },
     "packageManager": "pnpm@10.34.5",
     "author": "DayuanJiang and Next AI Draw.io contributors; Nimi adaptation contributors"

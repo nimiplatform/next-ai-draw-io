@@ -1,6 +1,6 @@
 app_id: io.github.nimiplatform.next-ai-draw-io
 display_name: Next AI Draw.io
-version: 0.4.18
+version: 0.4.19
 npm_package_name: next-ai-draw-io
 cargo_package_name: next-ai-draw-io-shell
 tauri_identifier: ai.nimi.apps.io.github.nimiplatform.next-ai-draw-io
