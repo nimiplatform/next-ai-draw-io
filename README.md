@@ -288,3 +288,9 @@ See [FAQ](./docs/en/FAQ.md) for common issues and solutions.
 [![Star History Chart](https://api.star-history.com/svg?repos=DayuanJiang/next-ai-draw-io&type=date&legend=top-left)](https://www.star-history.com/#DayuanJiang/next-ai-draw-io&type=date&legend=top-left)
 
 ---
+
+## Published Nimi dependency update — 2026-10-12
+
+[0.4.20](https://github.com/nimiplatform/next-ai-draw-io/releases/tag/v0.4.20) is published through the managed immutable-release workflow and [admitted to the Registry](https://github.com/nimiplatform/nimi-app-registry/pull/66). The App consumes released SDK 0.21.0, Kit/native 0.19.0, App Tools 0.12.0 and Nimi Coding 0.6.5 through public npm locks, with no local Nimi dependency override.
+
+Diagram generation, a focused edit and saved diagram/chat reload passed. These business checks used the actual Desktop-supervised development Host. Catalog AI acceptance remains NOT-VERIFIED; the user authorized publication and admission with that limitation recorded. Windows package production tests, build and provenance passed; Windows interactive use remains NOT-VERIFIED.
