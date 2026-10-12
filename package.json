@@ -1,6 +1,6 @@
 {
     "name": "next-ai-draw-io",
-    "version": "0.4.19",
+    "version": "0.4.20",
     "license": "Apache-2.0",
     "private": true,
     "main": "dist-electron/main.js",
@@ -42,8 +42,8 @@
         "build:electron:windows": "node scripts/package-nimi-electron.mjs --target=windows-x86_64"
     },
     "dependencies": {
-        "@nimiplatform/sdk": "^0.13.0",
-        "@nimiplatform/kit": "^0.9.0"
+        "@nimiplatform/sdk": "^0.21.0",
+        "@nimiplatform/kit": "^0.19.0"
     },
     "optionalDependencies": {
         "@tailwindcss/oxide-linux-x64-gnu": "^4.1.18",
@@ -56,7 +56,7 @@
         ]
     },
     "devDependencies": {
-        "@ai-sdk/react": "^3.0.1",
+        "@ai-sdk/react": "^4.0.140",
         "@anthropic-ai/tokenizer": "^0.0.4",
         "@aws-sdk/client-dynamodb": "^3.957.0",
         "@biomejs/biome": "2.5.7",
@@ -67,7 +67,7 @@
         "@langfuse/otel": "^4.4.4",
         "@langfuse/tracing": "^4.4.9",
         "@next/third-parties": "^16.0.6",
-        "@nimiplatform/sdk-adapter-vercel-ai": "^0.1.0",
+        "@nimiplatform/sdk-adapter-vercel-ai": "^0.5.0",
         "@opennextjs/cloudflare": "^1.17.1",
         "@opentelemetry/api": "^1.9.0",
         "@opentelemetry/exporter-trace-otlp-http": "^0.222.0",
@@ -98,12 +98,12 @@
         "@vitejs/plugin-react": "^5.1.2",
         "@vitest/coverage-v8": "^4.0.16",
         "@xmldom/xmldom": "^0.9.8",
-        "ai": "^6.0.1",
+        "ai": "^7.0.137",
         "base-64": "^1.0.0",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "cmdk": "^1.1.1",
-        "electron": "42.10.1",
+        "electron": "^44.5.1",
         "esbuild": "0.28.2",
         "eslint": "9.39.5",
         "eslint-config-next": "16.1.6",
@@ -139,8 +139,9 @@
         "vitest": "^4.0.16",
         "wrangler": "^4.60.0",
         "zod": "^4.1.12",
-        "@nimiplatform/app-tools": "^0.7.5",
-        "@nimiplatform/nimi-coding": "0.6.3"
+        "@nimiplatform/app-tools": "^0.12.0",
+        "@nimiplatform/nimi-coding": "0.6.5",
+        "yaml": "^2.9.0"
     },
     "packageManager": "pnpm@10.34.5",
     "author": "DayuanJiang and Next AI Draw.io contributors; Nimi adaptation contributors"

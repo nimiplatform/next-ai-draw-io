@@ -1,9 +1,9 @@
 import {
     convertToModelMessages,
     InvalidToolInputError,
+    isStepCount,
     isToolUIPart,
     type LanguageModel,
-    stepCountIs,
     streamObject,
     streamText,
     type UIMessage,
@@ -88,11 +88,11 @@ Use the CURRENT XML as the source of truth for every edit, cell ID and shape cou
     }
     const result = streamText({
         model,
-        system,
+        instructions: system,
         messages,
         ...(maxOutputTokens === undefined ? {} : { maxOutputTokens }),
         abortSignal: signal,
-        stopWhen: stepCountIs(5),
+        stopWhen: isStepCount(5),
         tools: createDiagramTools(async (name) => {
             signal.throwIfAborted()
             const response = await fetch(
@@ -144,7 +144,7 @@ export async function createDiagramValidationResponse(
     const result = streamObject({
         model,
         schema: ValidationResultSchema,
-        system: VALIDATION_SYSTEM_PROMPT,
+        instructions: VALIDATION_SYSTEM_PROMPT,
         messages: [
             {
                 role: "user",

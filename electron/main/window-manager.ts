@@ -1,7 +1,12 @@
 import path from "node:path"
 import { fileURLToPath } from "node:url"
-import { isAllowedElectronRendererUrl } from "@nimiplatform/kit/shell/electron/main"
 import { app, BrowserWindow, screen, shell } from "electron"
+
+// Keep this dynamic inside the deferred module too: the Host bundler hoists
+// static external imports even when this local module was imported lazily.
+const { isAllowedElectronRendererUrl } = await import(
+    "@nimiplatform/kit/shell/electron/main"
+)
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url))
 

@@ -14,6 +14,8 @@ import { createRequire } from "node:module"
 import { tmpdir } from "node:os"
 import path from "node:path"
 import { packager } from "@electron/packager"
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml"
+import { rebaseLocalPackagePaths } from "./nimi-package-locators.mjs"
 import { prepareNativeIcons } from "./prepare-native-icons.mjs"
 
 const appRoot = process.cwd()
@@ -83,18 +85,41 @@ await run(["run", "prepare:drawio"])
 await run(["run", "build"])
 await run(["exec", "node", "scripts/build-nimi-electron.mjs", "--production"])
 await run(["exec", "node", "scripts/prepare-electron-build.mjs"])
-const stage = await mkdtemp(path.join(tmpdir(), "drawio-nimi-package-"))
+const stage = await realpath(
+    await mkdtemp(path.join(tmpdir(), "drawio-nimi-package-")),
+)
 const source = path.join(stage, "app")
 let complete = false
 try {
     await mkdir(source, { recursive: true })
-    for (const file of [
-        "package.json",
-        "pnpm-lock.yaml",
-        "LICENSE",
-        "README.md",
-    ])
+    for (const file of ["LICENSE", "README.md"])
         await copyFile(path.join(appRoot, file), path.join(source, file))
+    await writeFile(
+        path.join(source, "package.json"),
+        `${JSON.stringify(rebaseLocalPackagePaths(appManifest, appRoot, source), null, 2)}\n`,
+    )
+    const lock = parseYaml(
+        await readFile(path.join(appRoot, "pnpm-lock.yaml"), "utf8"),
+    )
+    await writeFile(
+        path.join(source, "pnpm-lock.yaml"),
+        stringifyYaml(rebaseLocalPackagePaths(lock, appRoot, source)),
+    )
+    let workspace = {}
+    try {
+        workspace = parseYaml(
+            await readFile(path.join(appRoot, "pnpm-workspace.yaml"), "utf8"),
+        )
+    } catch (error) {
+        if (error.code !== "ENOENT") throw error
+    }
+    await writeFile(
+        path.join(source, "pnpm-workspace.yaml"),
+        stringifyYaml({
+            ...rebaseLocalPackagePaths(workspace, appRoot, source),
+            packages: ["."],
+        }),
+    )
     await cp(
         path.join(appRoot, "dist-electron"),
         path.join(source, "dist-electron"),
@@ -148,6 +173,7 @@ try {
         `${JSON.stringify(stagedManifest, null, 2)}\n`,
     )
     await rm(path.join(source, "pnpm-lock.yaml"))
+    await rm(path.join(source, "pnpm-workspace.yaml"))
     await rm(target, { recursive: true, force: true })
     const version = mac
         ? appManifest.version

@@ -2,9 +2,26 @@
 
 This fork adapts [DayuanJiang/next-ai-draw-io](https://github.com/DayuanJiang/next-ai-draw-io), based on commit `027cd88c9088ad5b2d6deff4641dc47ded06afd2` (0.4.16). The original [Apache-2.0 license](../LICENSE), upstream identity and credits remain. The fork is [nimiplatform/next-ai-draw-io](https://github.com/nimiplatform/next-ai-draw-io). The immutable [v0.4.16 release](https://github.com/nimiplatform/next-ai-draw-io/releases/tag/v0.4.16) was not admitted to the Registry. The corrected [v0.4.17 release](https://github.com/nimiplatform/next-ai-draw-io/releases/tag/v0.4.17) is published from `f6e331e008a712b92140356e688ae548109dac9e`; [Registry submission #54](https://github.com/nimiplatform/nimi-app-registry/pull/54) was approved and merged as `96a9615`. The current version, [v0.4.18](https://github.com/nimiplatform/next-ai-draw-io/releases/tag/v0.4.18), is publicly released and immutable; its [Registry update #55](https://github.com/nimiplatform/nimi-app-registry/pull/55) was approved and merged as `fcb78658b3edb26da92e8aa23ffca10606b92cc3`.
 
-## Current delivery status
+## Published dependency upgrade — 2026-10-12
 
-The repository installs the fixed **public dependency matrix** below with a frozen pnpm lock. All temporary Nimi overrides have been removed, and package integrity values match public npm. Version 0.4.17 passed Registry admission and actual macOS Catalog download, package verification and installation, but startup failed before creating a window because a required sharp shared library was inside ASAR. Version 0.4.18 subsequently passed the actual Catalog package update and installed-window launch in the existing source Desktop/Runtime environment, confirming that the sharp startup fault is resolved. The owner closed this adaptation phase on 2026-09-15 after development acceptance, publication, Registry admission and the source-environment Catalog lifecycle checks. Ordinary production AI/storage and Windows user journeys remain **NOT-VERIFIED**, deferred to a separate acceptance phase covering multiple Apps.
+Version 0.4.20 uses the public npm SDK 0.21.0, Kit/native 0.19.0,
+App Tools 0.12.0, Nimi Coding 0.6.5 and Vercel adapter 0.5.0 with AI SDK 7.
+The root frozen pnpm lock records registry integrity; no Nimi tarball, directory
+or source-workspace override remains. The Next.js renderer and App-owned Host,
+diagram tools, storage, native exports and cancellation remain in this App.
+
+On macOS arm64, production preflight, 80 tests, TypeScript/Electron compilation,
+production build and pack pass. A Desktop-supervised App using these public
+packages generated a three-node diagram through the real configured Nimi model,
+then changed one label through `edit_diagram`; the other nodes and connectors
+were retained. Reloading restored the saved conversation and diagram.
+Public Release, Registry admission and installed-Catalog verification will be
+recorded here after their actual completion. Windows user journeys remain
+NOT-VERIFIED on this macOS host.
+
+## Previous public delivery status
+
+The previous delivery installed the fixed **public dependency matrix** below with a frozen pnpm lock. That delivery removed its temporary Nimi overrides and recorded public npm integrity values. Version 0.4.17 passed Registry admission and actual macOS Catalog download, package verification and installation, but startup failed before creating a window because a required sharp shared library was inside ASAR. Version 0.4.18 subsequently passed the actual Catalog package update and installed-window launch in the existing source Desktop/Runtime environment, confirming that the sharp startup fault is resolved. The owner closed this adaptation phase on 2026-09-15 after development acceptance, publication, Registry admission and the source-environment Catalog lifecycle checks. Ordinary production AI/storage and Windows user journeys remain **NOT-VERIFIED**, deferred to a separate acceptance phase covering multiple Apps.
 
 Version 0.4.18 expands the App-owned ASAR unpack rule from `**/*.node` to `**/*.{node,dylib,dll}`. Native addons and their shared libraries keep their physical relative paths; JavaScript and other content remain archived. The Nimi production carrier, fixed dependencies, LICENSE bytes and AI/business code are unchanged. The repair did not manually patch the installed 0.4.17 bundle or alter its Release/tag; the subsequent Catalog update used the normal managed lifecycle.
 

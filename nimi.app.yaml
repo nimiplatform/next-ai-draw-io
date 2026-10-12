@@ -1,6 +1,6 @@
 app_id: io.github.nimiplatform.next-ai-draw-io
 display_name: Next AI Draw.io
-version: 0.4.19
+version: 0.4.20
 profile: standalone
 manifest_role: submitted-input
 app_access:
@@ -40,12 +40,6 @@ safety_profile:
 storage_policy:
   kind: app-owned-os-storage
   os_storage_disclosure:
-    - path_pattern: ~/Library/Application Support/Next AI Draw.io — Nimi/
-      purpose: macOS Electron display preferences and browser cache; conversations/templates use Nimi managed storage
-      expected_size_band: 1–500 MB
-    - path_pattern: "%APPDATA%/Next AI Draw.io — Nimi/"
-      purpose: Windows Electron display preferences and browser cache; conversations/templates use Nimi managed storage
-      expected_size_band: 1–500 MB
     - path_pattern: User-selected export destinations
       purpose: Drawing and template exports saved through system file dialogs
       expected_size_band: Up to 25 MB per drawing export

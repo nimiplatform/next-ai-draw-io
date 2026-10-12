@@ -1,3 +1,12 @@
+# Next AI Draw.io 0.4.20 — Published Nimi packages
+
+Uses SDK 0.21.0, Kit/native 0.19.0, App Tools 0.12.0, Nimi Coding 0.6.5 and
+Vercel adapter 0.5.0 with AI SDK 7, resolved from npm with a frozen pnpm lock.
+Preserves the original diagram, tools, files, templates and export workflows.
+The Host binds Desktop's technical profile before loading the remaining Kit
+modules. macOS production build/pack and real model generation and editing have
+passed; release/admission and installed acceptance are separate stages.
+
 # Next AI Draw.io 0.4.19 — Nimi adaptation
 
 Adds the publisher declaration for audience, AI text and diagram exports, and external URL retrieval. Keeps SDK 0.13 / Kit 0.9, the Vercel AI adapter and existing diagram workflows. No launch gate or safety certification is introduced. Publication, Registry admission and installed acceptance remain separate steps.

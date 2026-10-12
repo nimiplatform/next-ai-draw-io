@@ -15,6 +15,7 @@ export const nimiAIFetch: typeof fetch = async (input, init) => {
     }
     const model = createNimiLocalAppVercelLanguageModel({
         ai: getNimiClient().ai,
+        executionMode: "sync",
     })
     try {
         if (url.pathname.endsWith("/api/chat"))

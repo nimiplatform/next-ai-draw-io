@@ -12,7 +12,7 @@ Recent chats retain the conversation and drawing. The history button restores ea
 
 Use Save to export drawio XML, PNG, SVG or editable SVG. Choose a destination in the system file dialog. Cancellation does not create a file or report success.
 
-Conversations, templates, custom instructions and AI editing preferences use Nimi managed storage. Electron keeps display preferences and its browser cache in its ordinary user-data directory. Exported files remain at the locations you choose. Removing the Nimi package does not delete those user-selected exports or the App's OS preferences.
+Conversations, templates, custom instructions and AI editing preferences use Nimi managed storage. Electron display preferences, browser cache and drafts use the Host profile prepared by Nimi Desktop. Development, installed launch and a different Nimi data root have separate profiles; saved projects and normal export/open workflows preserve important work across them. Exported files remain at the locations you choose.
 
 Connection or model failures are shown explicitly. Visual validation errors do not certify a drawing as valid. Configure or restore access in Nimi Desktop when prompted; a missing model capability cannot be replaced by a private provider connection.
 

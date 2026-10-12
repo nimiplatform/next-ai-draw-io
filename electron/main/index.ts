@@ -1,9 +1,6 @@
 // Nimi adaptation: keep the Next.js renderer, bind protected services in this Host.
 
-import {
-    registerNimiElectronAppAssetProtocolScheme,
-    registerNimiElectronAppBridge,
-} from "@nimiplatform/kit/shell/electron/main"
+import { configureNimiElectronAppHostProfile } from "@nimiplatform/kit/shell/electron/host-profile"
 import {
     app,
     BrowserWindow,
@@ -18,9 +15,22 @@ import { startNextServer, stopNextServer } from "./next-server"
 import { createAppFileCommands } from "./nimi-file-commands"
 import { readDevelopmentRendererUrl } from "./nimi-launch"
 import { findAvailablePort } from "./port-manager"
-import { createWindow } from "./window-manager"
 
 declare const __NIMI_ELECTRON_PRODUCTION__: boolean
+try {
+    configureNimiElectronAppHostProfile(app)
+} catch (error) {
+    process.stderr.write(
+        `[nimi-app-host-profile] ${error instanceof Error ? error.message : String(error)}\n`,
+    )
+    app.exit(78)
+    throw error
+}
+const {
+    registerNimiElectronAppAssetProtocolScheme,
+    registerNimiElectronAppBridge,
+} = await import("@nimiplatform/kit/shell/electron/main")
+const { createWindow } = await import("./window-manager")
 const developmentUrl = readDevelopmentRendererUrl(
     process.argv,
     __NIMI_ELECTRON_PRODUCTION__,
