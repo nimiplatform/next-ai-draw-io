@@ -7,9 +7,9 @@ source-development environment. The App always loads its own packaged native
 carrier. Source Runtime peer identity and installed-App/session admission remain
 verified; no workspace carrier replacement or trust-check bypass is used.
 
-Catalog AI acceptance for this new artifact is pending publication and admission;
-earlier development and installed-artifact results below retain their stated
-versions and limitations.
+Catalog AI acceptance passed on macOS arm64 using the actual [0.4.21 Release](https://github.com/nimiplatform/next-ai-draw-io/releases/tag/v0.4.21) admitted by [Registry PR #72](https://github.com/nimiplatform/nimi-app-registry/pull/72), downloaded and launched through source Nimi Home. Generated a three-node diagram through on-device Gemma 4, applied an AI label edit, restored the saved session and exported valid draw.io XML with four vertices and two edges.
+
+Local screenshots and exported results are in `.nimi/local/released-dependencies-20261012/`. Windows interactive acceptance and other unrun AI modalities remain **NOT-VERIFIED**. These results supersede the earlier Catalog limitation; historical results below retain their stated versions.
 
 # Next AI Draw.io
 
