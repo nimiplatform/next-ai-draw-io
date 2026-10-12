@@ -1,3 +1,7 @@
+# 0.4.22 — Windows candidate (unreleased)
+
+Uses public SDK 0.21.0, Kit/native 0.19.3 and App Tools 0.12.2. Production builds use Next's supported webpack compiler after reproducing the Windows Turbopack Google-font query failure. The original Next.js renderer, draw.io canvas and diagram tools remain intact. Windows supervised AI creation, label editing and real draw.io XML export passed. This candidate has not been published or installed through the Catalog.
+
 # Nimi release 0.4.21 — Source Runtime support for Catalog Apps
 
 Updates the frozen public npm dependency to Kit/native 0.19.2. The installed App keeps its published native carrier and can connect to a source-development Runtime when launched through Home. Native peer identity checks and Runtime-owned installed-source, session and App Access admission remain mandatory. Production Runtime trust remains unchanged; invalid source Runtime observations fail closed without fallback. SDK 0.21.0, App Tools 0.12.0 and the existing App business workflows are retained.

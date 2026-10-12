@@ -1,3 +1,7 @@
+## Windows candidate 0.4.22 — 2026-10-13
+
+Unreleased working tree using SDK 0.21.0, Kit/native 0.19.3, App Tools 0.12.2, Nimi Coding 0.6.5 and Vercel adapter 0.5.0/AI SDK 7. Production preflight and 80 tests pass. The supervised Windows App used qwen3.8-flash to create a three-node Chinese flowchart, edit its middle label and export actual draw.io XML. Decoding that file recovered all three intended labels. The pinned draw.io 29.2.6 assets use `pnpm prepare:drawio`; production uses webpack after reproducing the Windows Turbopack font-query failure. Installation of this candidate remains NOT-VERIFIED. Earlier macOS release evidence below is retained.
+
 ## Catalog App support for source Runtime — 0.4.21
 
 This release resolves public npm Kit/native **0.19.2** in the frozen lockfile,
