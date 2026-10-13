@@ -2,6 +2,21 @@
 
 This fork adapts [DayuanJiang/next-ai-draw-io](https://github.com/DayuanJiang/next-ai-draw-io), based on commit `027cd88c9088ad5b2d6deff4641dc47ded06afd2` (0.4.16). The original [Apache-2.0 license](../LICENSE), upstream identity and credits remain. The fork is [nimiplatform/next-ai-draw-io](https://github.com/nimiplatform/next-ai-draw-io). The immutable [v0.4.16 release](https://github.com/nimiplatform/next-ai-draw-io/releases/tag/v0.4.16) was not admitted to the Registry. The corrected [v0.4.17 release](https://github.com/nimiplatform/next-ai-draw-io/releases/tag/v0.4.17) is published from `f6e331e008a712b92140356e688ae548109dac9e`; [Registry submission #54](https://github.com/nimiplatform/nimi-app-registry/pull/54) was approved and merged as `96a9615`. The current version, [v0.4.18](https://github.com/nimiplatform/next-ai-draw-io/releases/tag/v0.4.18), is publicly released and immutable; its [Registry update #55](https://github.com/nimiplatform/nimi-app-registry/pull/55) was approved and merged as `fcb78658b3edb26da92e8aa23ffca10606b92cc3`.
 
+## Windows installed update — 2026-10-13
+
+The immutable 0.4.23 release is published for both targets. Its Registry
+candidate is [PR #92](https://github.com/nimiplatform/nimi-app-registry/pull/92);
+human admission remains pending.
+
+On the installed Nimi 0.2.3 fixed service, Home's **Update from local file**
+updated the existing Imported source from 0.4.22 to the local production 0.4.23
+package. The installed window rendered its bundled fonts and restored the
+previous conversation and diagram: 收到蓝鸟743请求 → 检查六项中文观察 → 保存中文报告.
+The edited middle label and both arrows remained. The App then closed normally.
+The earlier real AI creation/edit and native XML export results still apply to
+the unchanged business code; no generation was repeated for this font update.
+This is local imported-package acceptance, not a Catalog installation claim.
+
 ## Published dependency upgrade — 2026-10-12
 
 Version 0.4.20 uses the public npm SDK 0.21.0, Kit/native 0.19.0,
