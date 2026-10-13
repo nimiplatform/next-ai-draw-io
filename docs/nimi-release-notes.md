@@ -1,6 +1,8 @@
-# 0.4.22 — Windows candidate (unreleased)
+# 0.4.22 — Windows support
 
-Uses public SDK 0.21.0, Kit/native 0.19.3 and App Tools 0.12.2. Production builds use Next's supported webpack compiler after reproducing the Windows Turbopack Google-font query failure. The original Next.js renderer, draw.io canvas and diagram tools remain intact. Windows supervised AI creation, label editing and real draw.io XML export passed. This candidate has not been published or installed through the Catalog.
+Uses public SDK 0.21.0, Kit/native 0.19.3 and App Tools 0.12.2. Production builds use Next's supported webpack compiler after reproducing the Windows Turbopack Google-font query failure. The original Next.js renderer, draw.io canvas and diagram tools remain intact.
+
+Windows development and local imported installation both passed real AI creation, label editing and draw.io XML export. The installed App used MiMo v2.6 Flash to create and edit a three-node diagram; the native save dialog exported valid XML, and closing and reopening restored the saved conversation and drawing. Qwen3.8 Flash returned `ai-output-invalid` in two installed-App attempts; that model path remains unresolved. Publication, Registry admission and Catalog installation of this version are separate delivery steps.
 
 # Nimi release 0.4.21 — Source Runtime support for Catalog Apps
 
