@@ -1,3 +1,7 @@
+## Windows build repair 0.4.23 — 2026-10-13
+
+The 0.4.22 release workflow failed in Next.js's Google-font URL parser on the Windows runner. Version 0.4.23 bundles the same Plus Jakarta Sans and JetBrains Mono font families, with their original SIL Open Font Licenses, and uses `next/font/local`. The local Windows production build passes, and the packaged renderer contains the exact font and license bytes. Diagram behavior is unchanged; the 0.4.22 business acceptance below remains applicable. The 0.4.22 tag is retained, and Catalog delivery remains a separate step.
+
 ## Windows candidate 0.4.22 — 2026-10-13
 
 Unreleased candidate using SDK 0.21.0, Kit/native 0.19.3, App Tools 0.12.2, Nimi Coding 0.6.5 and Vercel adapter 0.5.0/AI SDK 7. Production preflight and 80 tests pass. Earlier supervised Windows development acceptance used qwen3.8-flash to create a three-node Chinese flowchart, edit its middle label and export actual draw.io XML. The pinned draw.io 29.2.6 assets use `pnpm prepare:drawio`; production uses webpack after reproducing the Windows Turbopack font-query failure.

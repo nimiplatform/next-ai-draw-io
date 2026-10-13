@@ -1,3 +1,7 @@
+# 0.4.23 — Bundled fonts for Windows builds
+
+Bundles the existing Plus Jakarta Sans and JetBrains Mono fonts with their SIL Open Font Licenses. Next.js now loads these local files, avoiding the Google Fonts download URL parsing failure encountered by the Windows 0.4.22 release build. The 0.4.22 tag is retained; that release did not complete. The Windows business acceptance below remains applicable to the unchanged diagram workflow; the new package and font loading are verified separately.
+
 # 0.4.22 — Windows support
 
 Uses public SDK 0.21.0, Kit/native 0.19.3 and App Tools 0.12.2. Production builds use Next's supported webpack compiler after reproducing the Windows Turbopack Google-font query failure. The original Next.js renderer, draw.io canvas and diagram tools remain intact.

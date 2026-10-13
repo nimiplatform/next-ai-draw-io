@@ -1,6 +1,6 @@
 import { GoogleAnalytics } from "@next/third-parties/google"
 import type { Metadata, Viewport } from "next"
-import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google"
+import localFont from "next/font/local"
 import { notFound } from "next/navigation"
 import { NimiSessionBoundary } from "@/components/nimi-session-boundary"
 import { DictionaryProvider } from "@/hooks/use-dictionary"
@@ -10,16 +10,18 @@ import { getDictionary, hasLocale } from "@/lib/i18n/dictionaries"
 
 import "../globals.css"
 
-const plusJakarta = Plus_Jakarta_Sans({
+const plusJakarta = localFont({
+    src: "../../public/fonts/PlusJakartaSans.ttf",
     variable: "--font-sans",
-    subsets: ["latin"],
-    weight: ["400", "500", "600", "700"],
+    weight: "400 700",
+    display: "swap",
 })
 
-const jetbrainsMono = JetBrains_Mono({
+const jetbrainsMono = localFont({
+    src: "../../public/fonts/JetBrainsMono.ttf",
     variable: "--font-mono",
-    subsets: ["latin"],
-    weight: ["400", "500"],
+    weight: "400 500",
+    display: "swap",
 })
 
 export const viewport: Viewport = {
