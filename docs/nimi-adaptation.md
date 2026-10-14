@@ -5,8 +5,11 @@ This fork adapts [DayuanJiang/next-ai-draw-io](https://github.com/DayuanJiang/ne
 ## Windows installed update — 2026-10-13
 
 The immutable 0.4.23 release is published for both targets. Its Registry
-candidate is [PR #92](https://github.com/nimiplatform/nimi-app-registry/pull/92);
-human admission remains pending.
+candidate [PR #92](https://github.com/nimiplatform/nimi-app-registry/pull/92)
+was human-approved and merged on October 14. The current Windows Catalog
+download, fresh installation, real MiMo diagram generation and Home relaunch
+acceptance is recorded at the top of README.md. This does not turn the earlier
+Imported update below into a Catalog N-to-N+1 update.
 
 On the installed Nimi 0.2.3 fixed service, Home's **Update from local file**
 updated the existing Imported source from 0.4.22 to the local production 0.4.23

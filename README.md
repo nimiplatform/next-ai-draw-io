@@ -1,3 +1,19 @@
+## Windows Catalog acceptance 0.4.23 — 2026-10-14
+
+The user approved the existing dual-platform stable candidate, and Registry
+[PR #92](https://github.com/nimiplatform/nimi-app-registry/pull/92) passed its
+finalization check and merged. On installed Nimi 0.2.4, Home discovered 0.4.23,
+downloaded the complete 722,661,492-byte Windows package from the Catalog,
+verified it and installed a separate Catalog instance. The existing Imported
+copy was preserved. Home launched the Catalog release-directory Host; its
+configured MiMo model generated a real Chinese three-node flowchart titled
+`Catalog 安装验收`, with 接收材料 → 人工复核 → 归档完成. Normal close and Home
+relaunch restored the recent conversation and all three nodes and connectors.
+This verifies fresh Windows Catalog installation and AI/storage use. It does
+not claim a Catalog N-to-N+1 update, because this machine had no prior Catalog
+installation for this App; the earlier Imported 0.4.22-to-0.4.23 update remains
+separate evidence. Existing export and macOS evidence retain their scope.
+
 ## Windows build repair 0.4.23 — 2026-10-13
 
 The 0.4.22 release workflow failed in Next.js's Google-font URL parser on the Windows runner. Version 0.4.23 bundles the same Plus Jakarta Sans and JetBrains Mono font families, with their original SIL Open Font Licenses, and uses `next/font/local`. The local Windows production build passes, and the packaged renderer contains the exact font and license bytes. Diagram behavior is unchanged; the 0.4.22 business acceptance below remains applicable. The 0.4.22 tag is retained, and Catalog delivery remains a separate step.
