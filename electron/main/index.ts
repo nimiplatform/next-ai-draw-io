@@ -30,7 +30,7 @@ const {
     registerNimiElectronAppAssetProtocolScheme,
     registerNimiElectronAppBridge,
 } = await import("@nimiplatform/kit/shell/electron/main")
-const { createWindow } = await import("./window-manager")
+const { createWindow, getIconPath } = await import("./window-manager")
 const developmentUrl = readDevelopmentRendererUrl(
     process.argv,
     __NIMI_ELECTRON_PRODUCTION__,
@@ -45,6 +45,8 @@ registerNimiElectronAppAssetProtocolScheme(protocol)
 void app
     .whenReady()
     .then(async () => {
+        if (process.platform === "darwin" && !app.isPackaged)
+            app.dock?.setIcon(getIconPath())
         const port = developmentUrl ? undefined : await findAvailablePort()
         const origin = developmentUrl || `http://127.0.0.1:${port}`
         const allowedRendererUrls = [

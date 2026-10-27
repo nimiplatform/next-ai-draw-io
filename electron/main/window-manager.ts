@@ -12,25 +12,18 @@ const currentDir = path.dirname(fileURLToPath(import.meta.url))
 
 let mainWindow: BrowserWindow | null = null
 
-/**
- * Get the icon path based on platform
- * Note: electron-builder converts icon.png during packaging,
- * but at runtime we use PNG directly - Electron handles it
- */
-function getIconPath(): string | undefined {
-    // macOS doesn't need explicit icon - it's embedded in the app bundle
-    if (process.platform === "darwin" && app.isPackaged) {
-        return undefined
-    }
-
-    const iconName = "icon.png"
-
-    if (app.isPackaged) {
-        return path.join(process.resourcesPath, iconName)
-    }
-
-    // Development: use icon.png from resources
-    return path.join(currentDir, "../resources/icon.png")
+export function getIconPath(): string {
+    return path.join(
+        currentDir,
+        "..",
+        "assets",
+        "native",
+        process.platform === "win32"
+            ? "windows.ico"
+            : process.platform === "darwin"
+              ? "macos.png"
+              : "app.png",
+    )
 }
 
 /**

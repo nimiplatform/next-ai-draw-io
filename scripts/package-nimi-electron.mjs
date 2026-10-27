@@ -16,7 +16,6 @@ import path from "node:path"
 import { packager } from "@electron/packager"
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml"
 import { rebaseLocalPackagePaths } from "./nimi-package-locators.mjs"
-import { prepareNativeIcons } from "./prepare-native-icons.mjs"
 
 const appRoot = process.cwd()
 const mac = process.platform === "darwin" && process.arch === "arm64"
@@ -178,9 +177,9 @@ try {
     const version = mac
         ? appManifest.version
         : `${appManifest.version.split("-")[0]}.0`
-    const icons = await prepareNativeIcons(appRoot)
+    await cp(path.join(appRoot, "assets", "native"), path.join(source, "assets", "native"), { recursive: true })
     const paths = await packager({
-        icon: mac ? icons.icns : icons.ico,
+        icon: path.join(appRoot, "assets", "native", mac ? "macos.icns" : "windows.ico"),
         dir: source,
         platform,
         arch,

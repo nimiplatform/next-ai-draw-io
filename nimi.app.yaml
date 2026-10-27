@@ -50,7 +50,6 @@ local_development:
 metadata:
   summary: Create and edit draw.io diagrams with natural language, images and documents, then restore history or export your work.
   icon: resources/icon.png
-  readme: docs/nimi-user-guide.md
   release_notes: docs/nimi-release-notes.md
   author: DayuanJiang and Next AI Draw.io contributors; Nimi adaptation contributors
   homepage_url: https://github.com/nimiplatform/next-ai-draw-io
