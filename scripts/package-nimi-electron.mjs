@@ -177,9 +177,18 @@ try {
     const version = mac
         ? appManifest.version
         : `${appManifest.version.split("-")[0]}.0`
-    await cp(path.join(appRoot, "assets", "native"), path.join(source, "assets", "native"), { recursive: true })
+    await cp(
+        path.join(appRoot, "assets", "native"),
+        path.join(source, "assets", "native"),
+        { recursive: true },
+    )
     const paths = await packager({
-        icon: path.join(appRoot, "assets", "native", mac ? "macos.icns" : "windows.ico"),
+        icon: path.join(
+            appRoot,
+            "assets",
+            "native",
+            mac ? "macos.icns" : "windows.ico",
+        ),
         dir: source,
         platform,
         arch,
